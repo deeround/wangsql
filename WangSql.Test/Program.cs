@@ -7,8 +7,8 @@ namespace WangSql.Test
     {
         static void Main(string[] args)
         {
-            //SqliteTest.Test();
-            PgsqlTest.Test();
+            SqliteTest.Test();
+            //PgsqlTest.Test();
             //PgsqlTest1.Test();
             //OracleTest.Test();
 

@@ -8,8 +8,7 @@ namespace WangSql.Test
     {
         public static void Test()
         {
-            var _sqlMapper = new SqlMapper
-                    (
+            DbProviderManager.Set(
                     "Oracle",
                     "Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.4.182)(PORT = 1521))(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = elaneweb)));User ID=elaneweb;Password=elaneweb;",
                     "Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess",
@@ -19,6 +18,7 @@ namespace WangSql.Test
                     false,
                     false
                     );
+            var _sqlMapper = new SqlMapper();
 
             //删除表
             try

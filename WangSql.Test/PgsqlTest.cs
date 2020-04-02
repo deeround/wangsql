@@ -8,8 +8,7 @@ namespace WangSql.Test
     {
         public static void Test()
         {
-            var _sqlMapper = new SqlMapper
-                    (
+            DbProviderManager.Set(
                     "Pgsql",
                     "User ID=postgres;Password=bcm@12345678;Host=152.136.38.249;Port=5432;Database=test;",
                     "Npgsql.NpgsqlConnection,Npgsql",
@@ -19,6 +18,7 @@ namespace WangSql.Test
                     false,
                     false
                     );
+            var _sqlMapper = new SqlMapper();
 
             //删除表
             try

@@ -8,17 +8,19 @@ namespace WangSql.Test
     {
         public static void Test()
         {
-            var _sqlMapper = new SqlMapper
-                    (
-                    "SQLite",
-                    "Data Source=mario.db;",
-                    "System.Data.SQLite.SQLiteConnection,System.Data.SQLite",
-                    true,
-                    true,
-                    "@",
-                    false,
-                    false
-                    );
+            //DbProviderManager.Set(
+            //        "SQLite",
+            //        "Default",
+            //        "Data Source=mario.db;",
+            //        "System.Data.SQLite.SQLiteConnection,System.Data.SQLite",
+            //        true,
+            //        true,
+            //        "@",
+            //        false,
+            //        false
+            //        );
+            DbProviderManager.Set();
+            var _sqlMapper = new SqlMapper();
 
             //删除表
             try

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -82,25 +83,25 @@ namespace WangSql
 
 
 
-        private void CheckParamValue(object value)
-        {
-            return;
+        //private void CheckParamValue(object value)
+        //{
+        //    return;
 
-            //if (value == null || value is DBNull) return;
-            //if (!(value is string)) return;
+        //    //if (value == null || value is DBNull) return;
+        //    //if (!(value is string)) return;
 
-            //var vs = value.ToString().ToLower();
-            //if (string.IsNullOrEmpty(vs)) return;
-            //string[] ds =
-            //{
-            //    "select", "insert", "delete", "update", "drop", "truncate", "declare", "exec", "script", "master",
-            //    "mid", "net user", "and", "or", "join"
-            //};
-            //if (ds.Any(item => vs.IndexOf(item, StringComparison.Ordinal) != -1))
-            //{
-            //    throw new SqlException("执行SQL中包含危险字符：" + vs);
-            //}
-        }
+        //    //var vs = value.ToString().ToLower();
+        //    //if (string.IsNullOrEmpty(vs)) return;
+        //    //string[] ds =
+        //    //{
+        //    //    "select", "insert", "delete", "update", "drop", "truncate", "declare", "exec", "script", "master",
+        //    //    "mid", "net user", "and", "or", "join"
+        //    //};
+        //    //if (ds.Any(item => vs.IndexOf(item, StringComparison.Ordinal) != -1))
+        //    //{
+        //    //    throw new SqlException("执行SQL中包含危险字符：" + vs);
+        //    //}
+        //}
 
         private bool DictionaryContainsKey(IDictionary param, string key)
         {
@@ -154,7 +155,7 @@ namespace WangSql
                 else
                 {
                     var obj = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
-                    CheckParamValue(obj);
+                    //CheckParamValue(obj);
                     PrepareSql = PrepareSql.Replace(item.FullName, obj?.ToString());
                 }
             }
@@ -178,7 +179,7 @@ namespace WangSql
                 else
                 {
                     var obj = TypeMap.ResolveParamValue(param);
-                    CheckParamValue(obj);
+                    //CheckParamValue(obj);
                     PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? string.Empty : obj.ToString());
                 }
             }
@@ -208,7 +209,7 @@ namespace WangSql
         //}
 
 
-        private static readonly Dictionary<string, ParamHandler> CacheMap = new Dictionary<string, ParamHandler>();
+        private static readonly ConcurrentDictionary<string, ParamHandler> CacheMap = new ConcurrentDictionary<string, ParamHandler>();
         private static readonly int CacheMapLength = 100000;
 
         public ParamHandler GetCacheMap(DbProvider dbProvider, string sql)

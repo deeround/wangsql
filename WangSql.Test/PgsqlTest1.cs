@@ -11,8 +11,7 @@ namespace WangSql.Test
         {
             Stopwatch stopwatch = new Stopwatch();
 
-            var _sqlMapper = new SqlMapper
-                    (
+            DbProviderManager.Set(
                     "Pgsql",
                     "User ID=postgres;Password=123456;Host=127.0.0.1;Port=5432;Database=test;",
                     "Npgsql.NpgsqlConnection,Npgsql",
@@ -22,6 +21,7 @@ namespace WangSql.Test
                     false,
                     false
                     );
+            var _sqlMapper = new SqlMapper();
 
             //删除表
             try

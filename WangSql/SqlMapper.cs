@@ -89,15 +89,23 @@ namespace WangSql
 
     public class SqlFactory
     {
-        public DbProvider DbProvider;
-        public ParamMap ParamMap;
-        public ResultMap ResultMap;
+        private readonly string _name;
 
-        public SqlFactory(DbProvider dbProvider, ResultMap resultMap, ParamMap paramMap)
+        public DbProvider DbProvider { get { return DbProviderManager.Get(_name); } }
+        public ParamMap ParamMap { get; private set; }
+        public ResultMap ResultMap { get; private set; }
+
+        public SqlFactory()
         {
-            DbProvider = dbProvider;
-            ResultMap = resultMap;
-            ParamMap = paramMap;
+            ParamMap = new ParamMap();
+            ResultMap = new ResultMap();
+        }
+
+        public SqlFactory(string name)
+        {
+            _name = name;
+            ParamMap = new ParamMap();
+            ResultMap = new ResultMap();
         }
 
         public IDbCommand CreateCommand(IDbConnection conn, string sql, object param, CommandType commandType, int? timeout = null)
@@ -135,14 +143,18 @@ namespace WangSql
         }
     }
 
+
+
     public class SqlMapper : ISqlMapper
     {
-        public SqlMapper(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql = false, bool debug = false)
+        public SqlMapper()
         {
-            var dbProvider = new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug);
-            var resultMap = new ResultMap();
-            var paramMap = new ParamMap();
-            SqlFactory = new SqlFactory(dbProvider, resultMap, paramMap);
+            SqlFactory = new SqlFactory();
+        }
+
+        public SqlMapper(string name)
+        {
+            SqlFactory = new SqlFactory(name);
         }
 
         public SqlFactory SqlFactory { get; private set; }
@@ -194,7 +206,7 @@ namespace WangSql
                     }
                 }
             }
-            return default(T);
+            return default;
         }
 
         public IEnumerable<T> Query<T>(string sql, object param)
@@ -261,128 +273,12 @@ namespace WangSql
         }
     }
 
-    public class SqlTrans : ISqlTrans
-    {
-        private readonly IDbConnection _conn;
-        private readonly IDbTransaction _trans;
-
-        public SqlTrans(SqlFactory sqlFactory)
-        {
-            SqlFactory = sqlFactory;
-            _conn = SqlFactory.CreateConnection();
-            _conn.Open();
-            _trans = _conn.BeginTransaction();
-        }
-
-        public SqlFactory SqlFactory { get; private set; }
-
-        public void Commit()
-        {
-            _trans?.Commit();
-        }
-
-        public void Dispose()
-        {
-            _trans?.Dispose();
-            if (_conn != null)
-            {
-                if (_conn.State != ConnectionState.Closed)
-                    _conn.Close();
-                _conn.Dispose();
-            }
-        }
-
-        public int Execute(string sql, object param)
-        {
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                return cmd.ExecuteNonQuery();
-            }
-        }
-
-        public T QueryFirstOrDefault<T>(string sql, object param)
-        {
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
-                        return (T)next;
-                    }
-                }
-            }
-            return default(T);
-        }
-
-        public IEnumerable<T> Query<T>(string sql, object param)
-        {
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
-                        yield return (T)next;
-                    }
-                }
-            }
-        }
-
-        public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
-        {
-            total = SqlFactory.DbProvider.BuildProvider.BuildPageCountSql<T>(this, sql, param);
-            var rr = SqlFactory.DbProvider.BuildProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
-            return rr;
-        }
-
-        public void Rollback()
-        {
-            _trans?.Rollback();
-        }
-
-        public T Scalar<T>(string sql, object param)
-        {
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                var obj = cmd.ExecuteScalar();
-                var obj1 = TypeMap.ConvertToType(obj, typeof(T));
-                return (T)obj1;
-            }
-        }
-
-        public DataTable QueryTable(string sql, object param)
-        {
-            DataTable dt = new DataTable();
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                using (var dr = cmd.ExecuteReader())
-                {
-                    dt.Load(dr);
-                }
-            }
-            return dt;
-        }
-    }
-
     public class SqlMapperManual : ISqlMapperManual
     {
         private IDbConnection _conn = null;
-        private int _commandTimeout = 60;//秒(默认是30秒)
-        private int _connTimeout = 60;//10分钟
         private DateTime _connOpenTime = DateTime.Now;
+        private readonly int _commandTimeout = 60;//秒(默认是30秒)
+        private readonly int _connTimeout = 60;//10分钟
 
         private void CheckConnTime()
         {
@@ -393,12 +289,9 @@ namespace WangSql
             }
         }
 
-        public SqlMapperManual(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql = false, bool debug = false)
+        public SqlMapperManual(string name)
         {
-            var dbProvider = new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug);
-            var resultMap = new ResultMap();
-            var paramMap = new ParamMap();
-            SqlFactory = new SqlFactory(dbProvider, resultMap, paramMap);
+            SqlFactory = new SqlFactory(name);
         }
 
         public SqlFactory SqlFactory { get; private set; }
@@ -469,7 +362,7 @@ namespace WangSql
                     }
                 }
             }
-            return default(T);
+            return default;
         }
 
         [Obsolete("仅开发调试使用")]
@@ -533,4 +426,125 @@ namespace WangSql
             return dt;
         }
     }
+
+
+
+
+
+    public class SqlTrans : ISqlTrans
+    {
+        private readonly IDbConnection _conn;
+        private readonly IDbTransaction _trans;
+
+        public SqlTrans(SqlFactory sqlFactory)
+        {
+            SqlFactory = sqlFactory;
+            _conn = SqlFactory.CreateConnection();
+            _conn.Open();
+            _trans = _conn.BeginTransaction();
+        }
+
+        public SqlFactory SqlFactory { get; private set; }
+
+        public void Commit()
+        {
+            _trans?.Commit();
+        }
+
+        public void Dispose()
+        {
+            _trans?.Dispose();
+            if (_conn != null)
+            {
+                if (_conn.State != ConnectionState.Closed)
+                    _conn.Close();
+                _conn.Dispose();
+            }
+        }
+
+        public int Execute(string sql, object param)
+        {
+            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
+            cmd.Transaction = _trans;
+            using (cmd)
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public T QueryFirstOrDefault<T>(string sql, object param)
+        {
+            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
+            cmd.Transaction = _trans;
+            using (cmd)
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
+                        return (T)next;
+                    }
+                }
+            }
+            return default;
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param)
+        {
+            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
+            cmd.Transaction = _trans;
+            using (cmd)
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
+                        yield return (T)next;
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
+        {
+            total = SqlFactory.DbProvider.BuildProvider.BuildPageCountSql<T>(this, sql, param);
+            var rr = SqlFactory.DbProvider.BuildProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            return rr;
+        }
+
+        public void Rollback()
+        {
+            _trans?.Rollback();
+        }
+
+        public T Scalar<T>(string sql, object param)
+        {
+            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
+            cmd.Transaction = _trans;
+            using (cmd)
+            {
+                var obj = cmd.ExecuteScalar();
+                var obj1 = TypeMap.ConvertToType(obj, typeof(T));
+                return (T)obj1;
+            }
+        }
+
+        public DataTable QueryTable(string sql, object param)
+        {
+            DataTable dt = new DataTable();
+            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
+            cmd.Transaction = _trans;
+            using (cmd)
+            {
+                using (var dr = cmd.ExecuteReader())
+                {
+                    dt.Load(dr);
+                }
+            }
+            return dt;
+        }
+    }
+
 }

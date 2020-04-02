@@ -215,7 +215,7 @@ namespace WangSql
             }
             catch
             {
-                throw new SqlException($"无法将值{(obj ?? "null").ToString()}转换为{type.ToString()}");
+                throw new SqlException($"无法将值{obj ?? "null"}转换为{type}");
             }
 
             return result;

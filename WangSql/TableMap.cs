@@ -82,7 +82,7 @@ namespace WangSql
 
         private static TableInfo GetMap(Type type)
         {
-            TableInfo result = null;
+            TableInfo result;
             if (Maps.ContainsKey(type))
             {
                 result = Maps[type];
@@ -134,8 +134,10 @@ namespace WangSql
             var table = (TableAttribute)type.GetCustomAttribute(typeof(TableAttribute), false);
             if (table == null)//没有特性
             {
-                table = new TableAttribute();
-                table.Name = type.Name;
+                table = new TableAttribute
+                {
+                    Name = type.Name
+                };
             }
             result.Name = string.IsNullOrEmpty(table.Name) ? type.Name : table.Name;
             result.ClassName = type.Name;
@@ -152,8 +154,10 @@ namespace WangSql
                 var column = (ColumnAttribute)item.GetCustomAttribute(typeof(ColumnAttribute), false);
                 if (column == null)
                 {
-                    column = new ColumnAttribute();
-                    column.Name = item.Name;
+                    column = new ColumnAttribute
+                    {
+                        Name = item.Name
+                    };
                 }
                 result.Columns.Add(new ColumnInfo()
                 {
@@ -224,7 +228,6 @@ namespace WangSql
         /// <returns></returns>
         public TableMapColumn<T> HasColumn(Expression<Func<T, object>> expression, string name = null)
         {
-            var map = TableMap.GetMap<T>();
             var key = GetPropertyName(expression);
             return new TableMapColumn<T>(key).Name(name);
         }
