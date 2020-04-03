@@ -187,6 +187,7 @@ namespace WangSql
 
             return result;
         }
+
     }
 
     public class TableMapTable<T> where T : class
@@ -266,9 +267,14 @@ namespace WangSql
 
                 columns = columns?.TrimEnd(',');
             }
-            else if (fields.Body is MemberExpression exp)
+            else if (fields.Body is MemberExpression exp2)
             {
-                columns = exp.Member.Name;
+                columns = exp2.Member.Name;
+            }
+            else if (fields.Body is UnaryExpression exp3)    //表示具有一元运算符的表达式
+            {
+                var exp31 = exp3.Operand as MemberExpression;
+                columns = exp31.Member.Name;
             }
 
             return columns?.Split(',').First();

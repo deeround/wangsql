@@ -40,6 +40,8 @@ namespace WangSql.Test
 
             //删除数据
             _sqlMapper.From<Models.UserInfo>().Delete();
+            var user = _sqlMapper.From<Models.UserInfo>().FirstOrDefault();
+            _sqlMapper.From<Models.UserInfo>().Set(op => new { op.UserName, op.Sex }).Update(user);
 
             stopwatch.Start();
             //插入数据
