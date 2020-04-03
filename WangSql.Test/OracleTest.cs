@@ -84,7 +84,7 @@ namespace WangSql.Test
 　　知乎上有个答主讲过自己的故事：“和男朋友分手，只是因为他没有好好听我发的语音。";
             for (int i = 0; i < 10000; i++)
             {
-                Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "王浩" + Guid.NewGuid().ToString(), 99, true, text);
+                Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround" + Guid.NewGuid().ToString(), 99, true, text);
                 userInfo.CreateDateTime = DateTime.Now;
                 _sqlMapper.From<Models.UserInfo>().Insert(userInfo);
             }

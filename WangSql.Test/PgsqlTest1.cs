@@ -88,7 +88,7 @@ namespace WangSql.Test
 　　最怕的不是吵到天翻地覆，而是一味地退让隐忍，或者干脆使用冷暴力。
 
 　　知乎上有个答主讲过自己的故事：“和男朋友分手，只是因为他没有好好听我发的语音。";
-                Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "王浩" + Guid.NewGuid().ToString(), 99, true, text);
+                Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround" + Guid.NewGuid().ToString(), 99, true, text);
                 userInfo.CreateDateTime = DateTime.Now;
                 _sqlMapper.From<Models.UserInfo>().Insert(userInfo);
             }
