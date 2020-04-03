@@ -1,6 +1,6 @@
-# å¿«é€Ÿå…¥é—¨
+# ¿ìËÙÈëÃÅ
 
-### é…ç½®æ–‡ä»¶
+### ÅäÖÃÎÄ¼ş
 
  appsettings.json
 
@@ -22,7 +22,7 @@
 }
 ```
 
-æˆ–è€… 
+»òÕß 
 
 app.config
 
@@ -43,29 +43,29 @@ app.config
 </database>
 ```
 
-### åˆå§‹åŒ–é©±åŠ¨
+### ³õÊ¼»¯Çı¶¯
 
 ~~~c#
 /// <summary>
-/// é€šè¿‡é»˜è®¤é…ç½®æ–‡ä»¶(appsettings.jsonæˆ–è€…app.configæˆ–è€…web.config)åˆå§‹åŒ–é©±åŠ¨ç¨‹åº
+/// Í¨¹ıÄ¬ÈÏÅäÖÃÎÄ¼ş(appsettings.json»òÕßapp.config»òÕßweb.config)³õÊ¼»¯Çı¶¯³ÌĞò
 /// </summary>
 DbProviderManager.Set();
 ~~~
 
-æˆ–è€…
+»òÕß
 
 ~~~c#
 /// <summary>
-/// é€šè¿‡æŒ‡å®šæ–‡ä»¶åˆå§‹åŒ–é©±åŠ¨ç¨‹åº
+/// Í¨¹ıÖ¸¶¨ÎÄ¼ş³õÊ¼»¯Çı¶¯³ÌĞò
 /// </summary>
 DbProviderManager.Set("/app_database.config");
 ~~~
 
-æˆ–è€…
+»òÕß
 
 ~~~c#
 /// <summary>
-/// é€šè¿‡ä»£ç åˆå§‹åŒ–é©±åŠ¨ç¨‹åº
+/// Í¨¹ı´úÂë³õÊ¼»¯Çı¶¯³ÌĞò
 /// </summary>
 DbProviderManager.Set(
                     "SQLite",
@@ -80,38 +80,38 @@ DbProviderManager.Set(
                     );
 ~~~
 
-### åˆ›å»ºSqlMapperå¯¹è±¡
+### ´´½¨SqlMapper¶ÔÏó
 
 ~~~c#
 /// <summary>
-/// åˆ›å»ºé»˜è®¤å¯¹è±¡
+/// ´´½¨Ä¬ÈÏ¶ÔÏó
 /// </summary>
 var _sqlMapper = new SqlMapper();
 ~~~
 
-æˆ–è€…
+»òÕß
 
 ~~~ c#
 /// <summary>
-/// æ ¹æ®é©±åŠ¨åç§°åˆ›å»ºæŒ‡å®šå¯¹è±¡
+/// ¸ù¾İÇı¶¯Ãû³Æ´´½¨Ö¸¶¨¶ÔÏó
 /// </summary>
 var _sqlMapper = new SqlMapper("SQLite");
 ~~~
 
-### CRUDä½¿ç”¨
+### CRUDÊ¹ÓÃ
 
-##### æŸ¥è¯¢åˆ—è¡¨æ•°æ®
+##### ²éÑ¯ÁĞ±íÊı¾İ
 
 ~~~c#
-//æ— å‚æ•°æŸ¥è¯¢åˆ—è¡¨
+//ÎŞ²ÎÊı²éÑ¯ÁĞ±í
 var sql = "select * from tb_user";
 var r = _sqlMapper.Query<Dictionary<string, object>>(sql, null).ToList();
 ~~~
 
 ~~~c#
-//æœ‰å‚æ•°æŸ¥è¯¢åˆ—è¡¨
+//ÓĞ²ÎÊı²éÑ¯ÁĞ±í
 
-//ä¼ å‚æ–¹å¼1 ç›´æ¥ä¼ å…¥ç®€å•ç±»å‹çš„å€¼
+//´«²Î·½Ê½1 Ö±½Ó´«Èë¼òµ¥ÀàĞÍµÄÖµ
 var sql = "select * from tb_user where userid=#userid#";
 var r1 = _sqlMapper.Query<Dictionary<string, object>>(sql, userid).ToList();
 Dictionary<string, object>  sod = new Dictionary<string, object>()
@@ -119,10 +119,10 @@ Dictionary<string, object>  sod = new Dictionary<string, object>()
     { "userid", userid }
 };
 
-//ä¼ å‚æ–¹å¼2 ä¼ å…¥é”®å€¼å¯¹
+//´«²Î·½Ê½2 ´«Èë¼üÖµ¶Ô
 var r2 = _sqlMapper.Query<Dictionary<string, object>>(sql, sod).ToList();
 
-//ä¼ å‚æ–¹å¼3 ä¼ å…¥å®ä½“
+//´«²Î·½Ê½3 ´«ÈëÊµÌå
 UserInfo user = new UserInfo()
 {
     UserId = userid
@@ -130,18 +130,18 @@ UserInfo user = new UserInfo()
 var r3 = _sqlMapper.Query<Dictionary<string, object>>(sql, user).ToList();
 ~~~
 
-##### æŸ¥è¯¢å•æ¡æ•°æ®
+##### ²éÑ¯µ¥ÌõÊı¾İ
 
 ~~~c#
-//æ— å‚æ•°æŸ¥è¯¢å•æ¡
+//ÎŞ²ÎÊı²éÑ¯µ¥Ìõ
 var sql = "select * from tb_user";
 var r = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
 ~~~
 
 ~~~c#
-//æœ‰å‚æ•°æŸ¥è¯¢å•æ¡
+//ÓĞ²ÎÊı²éÑ¯µ¥Ìõ
 
-//ä¼ å‚æ–¹å¼1 ç›´æ¥ä¼ å…¥ç®€å•ç±»å‹çš„å€¼
+//´«²Î·½Ê½1 Ö±½Ó´«Èë¼òµ¥ÀàĞÍµÄÖµ
 var sql = "select * from tb_user where userid=#userid#";
 var r1 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, userid);
 Dictionary<string, object>  sod = new Dictionary<string, object>()
@@ -149,10 +149,10 @@ Dictionary<string, object>  sod = new Dictionary<string, object>()
     { "userid", userid }
 };
 
-//ä¼ å‚æ–¹å¼2 ä¼ å…¥é”®å€¼å¯¹
+//´«²Î·½Ê½2 ´«Èë¼üÖµ¶Ô
 var r2 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, sod);
 
-//ä¼ å‚æ–¹å¼3 ä¼ å…¥å®ä½“
+//´«²Î·½Ê½3 ´«ÈëÊµÌå
 UserInfo user = new UserInfo()
 {
     UserId = userid
@@ -160,9 +160,9 @@ UserInfo user = new UserInfo()
 var r3 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, user);
 ~~~
 
-##### æ’å…¥æ•°æ®
+##### ²åÈëÊı¾İ
 
-æ–°å¢åŒæ ·æ”¯æŒæŸ¥è¯¢æ—¶çš„ä¸‰ç§å…¥å‚ç±»å‹ï¼Œä¸‹é¢åªæ¼”ç¤ºå…¶ä¸­ä¸€ç§ä¼ å‚æ–¹å¼ã€‚
+ĞÂÔöÍ¬ÑùÖ§³Ö²éÑ¯Ê±µÄÈıÖÖÈë²ÎÀàĞÍ£¬ÏÂÃæÖ»ÑİÊ¾ÆäÖĞÒ»ÖÖ´«²Î·½Ê½¡£
 
 ~~~c#
 var sql = "insert into tb_user(userid,username,age) values(#userid#,#username#,#age#)";
@@ -175,9 +175,9 @@ var sod = new Dictionary<string, object>()
 var r = _sqlMapper.Execute(sql, sod);
 ~~~
 
-##### æ›´æ–°æ•°æ®
+##### ¸üĞÂÊı¾İ
 
-æ–°å¢åŒæ ·æ”¯æŒæŸ¥è¯¢æ—¶çš„ä¸‰ç§å…¥å‚ç±»å‹ï¼Œä¸‹é¢åªæ¼”ç¤ºå…¶ä¸­ä¸€ç§ä¼ å‚æ–¹å¼ã€‚
+ĞÂÔöÍ¬ÑùÖ§³Ö²éÑ¯Ê±µÄÈıÖÖÈë²ÎÀàĞÍ£¬ÏÂÃæÖ»ÑİÊ¾ÆäÖĞÒ»ÖÖ´«²Î·½Ê½¡£
 
 ~~~c#
 var sql = "update tb_user set username=#username#,age=#age# where userid=#userid#";
@@ -190,9 +190,9 @@ var sod = new Dictionary<string, object>()
 var r = _sqlMapper.Execute(sql, sod);
 ~~~
 
-##### åˆ é™¤æ•°æ®
+##### É¾³ıÊı¾İ
 
-æ–°å¢åŒæ ·æ”¯æŒæŸ¥è¯¢æ—¶çš„ä¸‰ç§å…¥å‚ç±»å‹ï¼Œä¸‹é¢åªæ¼”ç¤ºå…¶ä¸­ä¸€ç§ä¼ å‚æ–¹å¼ã€‚
+ĞÂÔöÍ¬ÑùÖ§³Ö²éÑ¯Ê±µÄÈıÖÖÈë²ÎÀàĞÍ£¬ÏÂÃæÖ»ÑİÊ¾ÆäÖĞÒ»ÖÖ´«²Î·½Ê½¡£
 
 ~~~ c#
 var sql = "delete from tb_user where userid=#userid#";
