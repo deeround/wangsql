@@ -10,7 +10,7 @@ namespace WangSql.Test
         {
             DbProviderManager.Set(
                     "Pgsql",
-                    "User ID=postgres;Password=bcm@12345678;Host=152.136.38.249;Port=5432;Database=test;",
+                    "User ID=postgres;Password=123456;Host=127.0.0.1;Port=5432;Database=test;",
                     "Npgsql.NpgsqlConnection,Npgsql",
                     true,
                     true,
