@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -211,7 +213,7 @@ namespace WangSql
             throw new SqlException($"未找到数据库{name}的配置信息");
         }
         /// <summary>
-        /// 获取默认（Default）驱动对象
+        /// 获取默认驱动对象（第一个SET的对象）
         /// </summary>
         /// <returns></returns>
         public static DbProvider Get()
@@ -311,16 +313,63 @@ namespace WangSql
         }
         private static IList<DbProvider> GetJsonConfigFile(string config)
         {
-            return new List<DbProvider>();
+            IList<DbProvider> result = new List<DbProvider>();
+            var json = File.ReadAllText(config, Encoding.UTF8);
+
+            //Database
+            Regex regex = new Regex("Database[\\w\\W]*\\[([\\w\\W]*?)\\]", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var match = regex.Match(json);
+            if (match == null || match.Groups.Count < 2)
+            {
+                throw new SqlException($"配置文件{config}无Database配置信息");
+            }
+            json = match.Groups[1].Value;
+            json = json.Replace("\r\n", "").Replace("\r", "").Replace("\n", "\n");
+            //{}
+            regex = new Regex("\\{([\\w\\W]*?)\\}", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+            var matchs = regex.Matches(json);
+            if (matchs == null || matchs.Count == 0)
+            {
+                throw new SqlException($"配置文件{config}无Database配置信息");
+            }
+            foreach (Match item in matchs)
+            {
+                if (item.Groups.Count > 1)
+                {
+                    json = item.Value;
+                    var sod = new JsonReader(json).Value;
+                    string name = GetDictString(sod, "name");
+                    bool enabled = StringToBool(GetDictString(sod, "enabled"));
+                    string connectionString = GetDictString(sod, "connectionString");
+                    string connectionType = GetDictString(sod, "connectionType");
+                    bool useParameterPrefixInSql = StringToBool(GetDictString(sod, "useParameterPrefixInSql"));
+                    bool useParameterPrefixInParameter = StringToBool(GetDictString(sod, "useParameterPrefixInParameter"));
+                    string parameterPrefix = GetDictString(sod, "parameterPrefix");
+                    bool useQuotationInSql = StringToBool(GetDictString(sod, "useQuotationInSql"));
+                    bool debug = StringToBool(GetDictString(sod, "debug"));
+
+                    if (!enabled) continue;
+                    result.Add(new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
+                }
+            }
+
+            return result;
         }
 
 
         private static bool StringToBool(string str)
         {
             if (string.IsNullOrEmpty(str)) return false;
-            if (str.ToLower() == "true" || str == "1") return true;
+            if (str.Trim().ToLower() == "true" || str.Trim() == "1") return true;
             else return false;
         }
-
+        private static string GetDictString(Dictionary<string, object> dict, string name)
+        {
+            if (dict.Keys.Any(op => op.ToUpper() == name.ToUpper()))
+            {
+                return dict.First(x => x.Key.ToUpper() == name.ToUpper()).Value?.ToString();
+            }
+            return null;
+        }
     }
 }
