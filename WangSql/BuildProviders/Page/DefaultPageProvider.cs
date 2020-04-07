@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql
 {
-    public class DefaultBuildProvider : IBuildProvider
+    public class DefaultPageProvider : IPageProvider
     {
         public virtual int BuildPageCountSql<T>(ISqlExe sqlMapper, string sql, object param)
         {

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql.Migrate.BuildProviders.CodeFirst
 {
-    public class OracleProvider : ICodeFirstProvider
+    public class OracleMigrateProvider : IMigrateProvider
     {
         private SqlMapper _sqlMapper;
 
@@ -30,7 +30,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
                     catch (Exception ex)
                     {
                         trans.Rollback();
-                        throw new SqlMigrateException(ex.Message);
+                        throw new SqlException(ex.Message);
                     }
                 }
             }
@@ -120,7 +120,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
             {
                 case SimpleStandardType.None:
                     {
-                        throw new SqlMigrateException("不支持数据类型:" + column.PropertyType.ToString());
+                        throw new SqlException("不支持数据类型:" + column.PropertyType.ToString());
                     }
                 case SimpleStandardType.Numeric:
                     {
@@ -168,7 +168,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
                     }
                 default:
                     {
-                        throw new SqlMigrateException("不支持数据类型:" + column.PropertyType.ToString());
+                        throw new SqlException("不支持数据类型:" + column.PropertyType.ToString());
                     }
             }
         }

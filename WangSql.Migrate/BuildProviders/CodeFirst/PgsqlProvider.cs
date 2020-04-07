@@ -70,16 +70,16 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
                 result.Add($"alter table {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)} add constraint pk_{table.Name} primary key({string.Join(",", table.Columns.Where(x => x.IsPrimaryKey).Select(x => _sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(x.Name)))})");
             }
             //唯一键
-            if (table.Columns.Any(x => x.IsUniqueKey))
+            if (table.Columns.Any(x => x.IsUnique))
             {
                 //ALTER TABLE table_name
                 //ADD CONSTRAINT MyUniqueConstraint UNIQUE(column1, column2...);
-                var ukg = table.Columns.Where(x => x.IsUniqueKey && !string.IsNullOrEmpty(x.UniqueKeyGroup)).Select(x => x.UniqueKeyGroup).Distinct();
+                var ukg = table.Columns.Where(x => x.IsUnique && !string.IsNullOrEmpty(x.UniqueGroup)).Select(x => x.UniqueGroup).Distinct();
                 foreach (var item in ukg)
                 {
-                    result.Add($"alter table {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)} add constraint uk_{table.Name}_{item} unique({string.Join(",", table.Columns.Where(x => x.IsUniqueKey && x.UniqueKeyGroup == item).Select(x => _sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(x.Name)))})");
+                    result.Add($"alter table {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)} add constraint uk_{table.Name}_{item} unique({string.Join(",", table.Columns.Where(x => x.IsUnique && x.UniqueGroup == item).Select(x => _sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(x.Name)))})");
                 }
-                var ukColumns = table.Columns.Where(x => x.IsUniqueKey && string.IsNullOrEmpty(x.UniqueKeyGroup));
+                var ukColumns = table.Columns.Where(x => x.IsUnique && string.IsNullOrEmpty(x.UniqueGroup));
                 foreach (var item in ukColumns)
                 {
                     result.Add($"alter table {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)} add constraint uk_{table.Name}_{item.Name} unique({_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)})");

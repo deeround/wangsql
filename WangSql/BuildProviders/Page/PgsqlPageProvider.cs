@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql
 {
-    public class SqliteBuildProvider : DefaultBuildProvider, IBuildProvider
+    public class PgsqlPageProvider : DefaultPageProvider, IPageProvider
     {
         public override int BuildPageCountSql<T>(ISqlExe sqlMapper, string sql, object param)
         {

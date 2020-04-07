@@ -32,11 +32,11 @@ namespace WangSql.Test
             }
 
             //创建表
-            Migrate.BuildProviders.CodeFirst.ICodeFirstProvider build = new Migrate.BuildProviders.CodeFirst.OracleProvider();
+            Migrate.BuildProviders.CodeFirst.IMigrateProvider build = new Migrate.BuildProviders.CodeFirst.OracleMigrateProvider();
             build.Run(_sqlMapper);
 
             //删除数据
-            _sqlMapper.From<Models.UserInfo>().Delete();
+            _sqlMapper.Entity<Models.UserInfo>().Delete();
 
             //插入数据
             string text = @"以前觉得，谈恋爱，一定要找一个百分百对自己好的人。
@@ -86,11 +86,11 @@ namespace WangSql.Test
             {
                 Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround" + Guid.NewGuid().ToString(), 99, true, text);
                 userInfo.CreateDateTime = DateTime.Now;
-                _sqlMapper.From<Models.UserInfo>().Insert(userInfo);
+                _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
             }
 
             //查询
-            var users = _sqlMapper.From<Models.UserInfo>().ToList();
+            var users = _sqlMapper.Entity<Models.UserInfo>().ToList();
         }
     }
 }

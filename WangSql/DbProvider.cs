@@ -38,17 +38,17 @@ namespace WangSql
             ParameterPrefix = parameterPrefix;
             UseQuotationInSql = useQuotationInSql;
             Debug = debug;
-            BuildProvider = new DefaultBuildProvider();
+            BuildProvider = new DefaultPageProvider();
 
             //oracle
             if (connectionType.ToLower().Contains("oracle"))
             {
-                BuildProvider = new OracleBuildProvider();
+                BuildProvider = new OraclePageProvider();
             }
             //oracle
             else if (connectionType.ToLower().Contains("pgsql"))
             {
-                BuildProvider = new PgsqlBuildProvider();
+                BuildProvider = new PgsqlPageProvider();
             }
         }
 
@@ -60,7 +60,7 @@ namespace WangSql
         public bool UseParameterPrefixInSql { get; }
         public bool UseQuotationInSql { get; }
         public bool Debug { get; }
-        public IBuildProvider BuildProvider { get; }
+        public IPageProvider BuildProvider { get; }
 
         public IDbConnection CreateConnection()
         {

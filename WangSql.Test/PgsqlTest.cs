@@ -32,11 +32,11 @@ namespace WangSql.Test
             }
 
             //创建表
-            Migrate.BuildProviders.CodeFirst.ICodeFirstProvider build = new Migrate.BuildProviders.CodeFirst.PgsqlProvider();
+            Migrate.BuildProviders.CodeFirst.IMigrateProvider build = new Migrate.BuildProviders.CodeFirst.PgsqlMigrateProvider();
             build.Run(_sqlMapper);
 
             //删除数据
-            _sqlMapper.From<Models.UserInfo>().Delete();
+            _sqlMapper.Entity<Models.UserInfo>().Delete();
 
             //插入数据
             string text = @"以前觉得，谈恋爱，一定要找一个百分百对自己好的人。
@@ -84,10 +84,10 @@ namespace WangSql.Test
 　　知乎上有个答主讲过自己的故事：“和男朋友分手，只是因为他没有好好听我发的语音。";
             Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround", 99, true, text);
             userInfo.CreateDateTime = DateTime.Now;
-            _sqlMapper.From<Models.UserInfo>().Insert(userInfo);
+            _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
 
             //查询
-            var users = _sqlMapper.From<Models.UserInfo>().ToList();
+            var users = _sqlMapper.Entity<Models.UserInfo>().ToList();
         }
     }
 }

@@ -35,9 +35,13 @@ namespace WangSql
         /// </summary>
         public int? Precision { get; set; }
         /// <summary>
-        /// 是否可为空
+        /// 是否不可为空
         /// </summary>
         public bool IsNotNull { get; set; }
+        /// <summary>
+        /// 默认值
+        /// </summary>
+        public object DefaultValue { get; set; }
         /// <summary>
         /// 是否为主键
         /// </summary>
@@ -45,10 +49,18 @@ namespace WangSql
         /// <summary>
         /// 是否为唯一键
         /// </summary>
-        public bool IsUniqueKey { get; set; }
+        public bool IsUnique { get; set; }
         /// <summary>
         /// 唯一键分组
         /// </summary>
-        public string UniqueKeyGroup { get; set; }
+        public string UniqueGroup { get; set; }
+        /// <summary>
+        /// 是否为索引
+        /// </summary>
+        public bool IsIndex { get; set; }
+        /// <summary>
+        /// 索引分组
+        /// </summary>
+        public string IndexGroup { get; set; }
     }
 }

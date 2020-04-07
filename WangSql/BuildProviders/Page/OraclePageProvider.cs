@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql
 {
-    public class PgsqlBuildProvider : DefaultBuildProvider, IBuildProvider
+    public class OraclePageProvider : DefaultPageProvider, IPageProvider
     {
         public override int BuildPageCountSql<T>(ISqlExe sqlMapper, string sql, object param)
         {
@@ -16,11 +16,11 @@ namespace WangSql
         {
             if (pageIndex == 1)
             {
-                sql = $@"SELECT llll.* FROM ({sql}) llll LIMIT {pageSize}";
+                sql = $@"SELECT llll.*, ROWNUM RN FROM ({sql}) llll WHERE ROWNUM <= {pageSize}";
             }
             else
             {
-                sql = $@"SELECT llll.* FROM ({sql}) llll LIMIT {pageSize} OFFSET {(pageIndex - 1) * pageSize}";
+                sql = $@"SELECT lllll.* FROM (SELECT llll.*,ROWNUM RN FROM ({sql}) llll) lllll WHERE RN BETWEEN {pageIndex * pageSize + 1} AND {(pageIndex - 1) * pageSize}";
             }
             return sqlMapper.Query<T>(sql, param);
         }

@@ -35,13 +35,13 @@ namespace WangSql.Test
             }
 
             //创建表
-            Migrate.BuildProviders.CodeFirst.ICodeFirstProvider build = new Migrate.BuildProviders.CodeFirst.PgsqlProvider();
+            Migrate.BuildProviders.CodeFirst.IMigrateProvider build = new Migrate.BuildProviders.CodeFirst.PgsqlMigrateProvider();
             build.Run(_sqlMapper);
 
             //删除数据
-            _sqlMapper.From<Models.UserInfo>().Delete();
-            var user = _sqlMapper.From<Models.UserInfo>().FirstOrDefault();
-            _sqlMapper.From<Models.UserInfo>().Set(op => new { op.UserName, op.Sex }).Update(user);
+            _sqlMapper.Entity<Models.UserInfo>().Delete();
+            var user = _sqlMapper.Entity<Models.UserInfo>().FirstOrDefault();
+            _sqlMapper.Entity<Models.UserInfo>().Set(op => new { op.UserName, op.Sex }).Update(user);
 
             stopwatch.Start();
             //插入数据
@@ -92,13 +92,13 @@ namespace WangSql.Test
 　　知乎上有个答主讲过自己的故事：“和男朋友分手，只是因为他没有好好听我发的语音。";
                 Models.UserInfo userInfo = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround" + Guid.NewGuid().ToString(), 99, true, text);
                 userInfo.CreateDateTime = DateTime.Now;
-                _sqlMapper.From<Models.UserInfo>().Insert(userInfo);
+                _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
             }
             stopwatch.Stop();
             Console.WriteLine(stopwatch.ElapsedMilliseconds / 10);
 
             //查询
-            var users = _sqlMapper.From<Models.UserInfo>().ToList();
+            var users = _sqlMapper.Entity<Models.UserInfo>().ToList();
         }
     }
 }

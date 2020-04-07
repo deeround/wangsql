@@ -170,8 +170,8 @@ namespace WangSql
                     Precision = column.Precision,
                     IsNotNull = column.IsNotNull,
                     IsPrimaryKey = column.IsPrimaryKey,
-                    IsUniqueKey = column.IsUniqueKey,
-                    UniqueKeyGroup = column.UniqueKeyGroup
+                    IsUnique = column.IsUnique,
+                    UniqueGroup = column.UniqueGroup
                 });
             }
 
@@ -329,6 +329,12 @@ namespace WangSql
             map.IsNotNull = true;
             return this;
         }
+        public TableMapColumn<T> DefaultValue(object defaultValue)
+        {
+            var map = TableMap.GetMap<T>().Columns.First(x => x.PropertyName == _propertyName);
+            map.DefaultValue = defaultValue;
+            return this;
+        }
         public TableMapColumn<T> IsPrimaryKey()
         {
             var columns = TableMap.GetMap<T>().Columns;
@@ -337,16 +343,28 @@ namespace WangSql
             map.IsPrimaryKey = true;
             return this;
         }
-        public TableMapColumn<T> IsUniqueKey()
+        public TableMapColumn<T> IsUnique()
         {
             var map = TableMap.GetMap<T>().Columns.First(x => x.PropertyName == _propertyName);
-            map.IsUniqueKey = true;
+            map.IsUnique = true;
             return this;
         }
-        public TableMapColumn<T> UniqueKeyGroup(string uniqueKeyGroup)
+        public TableMapColumn<T> UniqueGroup(string uniqueGroup)
         {
             var map = TableMap.GetMap<T>().Columns.First(x => x.PropertyName == _propertyName);
-            map.UniqueKeyGroup = uniqueKeyGroup;
+            map.UniqueGroup = uniqueGroup;
+            return this;
+        }
+        public TableMapColumn<T> IsIndex()
+        {
+            var map = TableMap.GetMap<T>().Columns.First(x => x.PropertyName == _propertyName);
+            map.IsIndex = true;
+            return this;
+        }
+        public TableMapColumn<T> IndexGroup(string indexGroup)
+        {
+            var map = TableMap.GetMap<T>().Columns.First(x => x.PropertyName == _propertyName);
+            map.IndexGroup = indexGroup;
             return this;
         }
     }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql.Migrate.BuildProviders.CodeFirst
 {
-    public class OracleProvider : ICodeFirstProvider
+    public class PgsqlMigrateProvider : IMigrateProvider
     {
         private SqlMapper _sqlMapper;
 
@@ -30,7 +30,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
                     catch (Exception ex)
                     {
                         trans.Rollback();
-                        throw new SqlMigrateException(ex.Message);
+                        throw new SqlException(ex.Message);
                     }
                 }
             }
@@ -102,7 +102,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
 
         private bool ExsitTable(string tableName)
         {
-            string sql = $"select count(*) from user_tables where table_name = '{(_sqlMapper.SqlFactory.DbProvider.UseQuotationInSql ? tableName : tableName.ToUpper())}'";
+            string sql = $"select count(*) from pg_class where relname = '{(_sqlMapper.SqlFactory.DbProvider.UseQuotationInSql ? tableName : tableName.ToLower())}'";
             var count = _sqlMapper.Scalar<int>(sql, null);
             return count > 0;
         }
@@ -120,42 +120,42 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
             {
                 case SimpleStandardType.None:
                     {
-                        throw new SqlMigrateException("不支持数据类型:" + column.PropertyType.ToString());
+                        throw new SqlException("不支持数据类型:" + column.PropertyType.ToString());
                     }
                 case SimpleStandardType.Numeric:
                     {
                         if (column.Length <= 0) column.Length = 50;
                         if (column.Precision != null)
                         {
-                            return $"number({column.Length},{column.Precision})";
+                            return $"numeric({column.Length},{column.Precision})";
                         }
                         else
                         {
-                            return $"number({column.Length})";
+                            return $"numeric({column.Length})";
                         }
                     }
                 case SimpleStandardType.Varchar:
                     {
                         if (column.Length <= 0) column.Length = 50;
-                        return $"nvarchar2({column.Length})";
+                        return $"character varying({column.Length})";
                     }
                 case SimpleStandardType.Text:
                     {
-                        return $"clob";
+                        return $"text";
                     }
                 case SimpleStandardType.Char:
                     {
                         column.Length = 1;
-                        return $"nvarchar2(1)";
+                        return $"character varying(1)";
                     }
                 case SimpleStandardType.Enum:
                     {
                         if (column.Length <= 0) column.Length = 50;
-                        return $"nvarchar2({column.Length})";
+                        return $"character varying({column.Length})";
                     }
                 case SimpleStandardType.DateTime:
                     {
-                        return $"timestamp";
+                        return $"timestamp without time zone";
                     }
                 case SimpleStandardType.DateTimeOffset:
                     {
@@ -164,11 +164,11 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
                 case SimpleStandardType.Boolean:
                     {
                         column.Length = 1;
-                        return $"nvarchar2(1)";
+                        return $"character varying(1)";
                     }
                 default:
                     {
-                        throw new SqlMigrateException("不支持数据类型:" + column.PropertyType.ToString());
+                        throw new SqlException("不支持数据类型:" + column.PropertyType.ToString());
                     }
             }
         }

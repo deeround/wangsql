@@ -23,7 +23,7 @@ namespace WangSql.Test.Models
 
         [WangSql.Column(Length = 36, IsPrimaryKey = true, IsNotNull = true, Comment = "用户ID")]
         public string UserId { get; set; }
-        [WangSql.Column(IsUniqueKey = true, IsNotNull = true, Comment = "用户名")]
+        [WangSql.Column(IsUnique = true, IsNotNull = true, Comment = "用户名")]
         public string UserName { get; set; }
         [WangSql.Column(Length = 3, Comment = "年龄")]
         public int? Age { get; set; }
