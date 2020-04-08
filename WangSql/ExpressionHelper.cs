@@ -221,9 +221,26 @@ namespace WangSql
             }
             else if (typeof(IFormulaProvider).IsAssignableFrom(reflectedType))//自定义函数
             {
-                var name = ExpressionRouter(mce.Arguments[0]);
+                var objs = new List<object>();
+                foreach (var item in mce.Arguments)
+                {
+                    if (item is ConstantExpression item1)
+                    {
+                        var obj = item1.Value;
+                        if (item1.Value is string)
+                        {
+                            obj = $"'{obj}'";
+                        }
+                        objs.Add(obj);
+                    }
+                    else if (item is MemberExpression item2)
+                    {
+                        var obj = ExpressionRouter(item2);
+                        objs.Add(obj);
+                    }
+                }
                 MethodInfo methodInfo = typeof(IFormulaProvider).GetMethod(mce.Method.Name + "_method");//加载方法
-                return methodInfo.Invoke(_dbProvider.FormulaProvider, new object[] { name })?.ToString();//执行
+                return methodInfo.Invoke(_dbProvider.FormulaProvider, objs.ToArray())?.ToString();//执行
             }
             else
             {

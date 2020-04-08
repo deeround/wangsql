@@ -6,7 +6,7 @@ namespace WangSql.BuildProviders.Formula
 {
     public interface IFormulaProvider
     {
-        #region 通用函数
+        #region 聚合函数
         /// <summary>
         /// 计数函数（如：COUNT(ID)）
         /// </summary>
@@ -123,6 +123,14 @@ namespace WangSql.BuildProviders.Formula
         /// <returns></returns>
         DbOperator Round(object value, int s);
         string Round_method(object value, int s);
+
+        /// <summary>
+        /// 取小数（舍）
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        DbOperator Trunc(object value, int s);
+        string Trunc_method(object value, int s);
         #endregion
 
         #region 字符函数
@@ -167,7 +175,7 @@ namespace WangSql.BuildProviders.Formula
         string Replace_method(object value, string o, string n);
         #endregion
 
-        #region 类型转换函数
+        #region 转换函数
         /// <summary>
         /// 转成字符
         /// </summary>
@@ -177,7 +185,7 @@ namespace WangSql.BuildProviders.Formula
         string ToChar_method(object value);
 
         /// <summary>
-        /// 日期转成字符
+        /// 日期/数值转成字符
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -199,6 +207,24 @@ namespace WangSql.BuildProviders.Formula
         /// <returns></returns>
         DbOperator ToTimestamp(object value, string f);
         string ToTimestamp_method(object value, string f);
+
+        /// <summary>
+        /// 字符转成数值
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        DbOperator ToNumber(object value, string f);
+        string ToNumber_method(object value, string f);
+        #endregion
+
+        #region 其他函数
+        /// <summary>
+        /// 字符转成时间戳
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        DbOperator Nvl(object value1, object value2);
+        string Nvl_method(object value1, object value2);
         #endregion
     }
 }

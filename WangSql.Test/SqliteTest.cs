@@ -89,7 +89,11 @@ namespace WangSql.Test
             _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
 
             //查询
-            var users = _sqlMapper.Entity<Models.UserInfo>().Where(op=>_sqlMapper.SqlFactory.DbProvider.FormulaProvider.IsNull(op)).ToList();
+            var users = _sqlMapper.Entity<Models.UserInfo>()
+                .GroupBy(op => new { op.UserName, op.Sex })
+                .Having(op=>_sqlMapper.SqlFactory.DbProvider.FormulaProvider.Mod(op.UserName,123)>0)
+                .Select(op => new { op.UserName, op.Sex })
+                .ToList();
         }
     }
 }

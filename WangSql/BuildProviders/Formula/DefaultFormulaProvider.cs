@@ -152,6 +152,16 @@ namespace WangSql.BuildProviders.Formula
         {
             return $"ROUND({value},{s})";
         }
+
+        public DbOperator Trunc(object value, int s)
+        {
+            return _dbOperator;
+        }
+
+        public string Trunc_method(object value, int s)
+        {
+            return $"TRUNC({value},{s})";
+        }
         #endregion
 
         #region MyRegion
@@ -245,6 +255,28 @@ namespace WangSql.BuildProviders.Formula
         public string ToTimestamp_method(object value, string f)
         {
             return $"TO_TIMESTAMP({value},{f})";
+        }
+
+        public DbOperator ToNumber(object value, string f)
+        {
+            return _dbOperator;
+        }
+
+        public string ToNumber_method(object value, string f)
+        {
+            return $"TO_NUMBER({value},{f})";
+        }
+        #endregion
+
+        #region MyRegion
+        public DbOperator Nvl(object value1, object value2)
+        {
+            return _dbOperator;
+        }
+
+        public string Nvl_method(object value1, object value2)
+        {
+            return $"NVL({value1},{value2})";
         }
         #endregion
     }
