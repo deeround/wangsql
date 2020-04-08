@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WangSql.Migrate.BuildProviders.CodeFirst
+namespace WangSql
 {
-    public class SqliteMigrateProvider : IMigrateProvider
+    public class SqliteMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
         private SqlMapper _sqlMapper;
 
-        public void Run(SqlMapper sqlMapper)
+        public override void Run(SqlMapper sqlMapper)
         {
             _sqlMapper = sqlMapper;
             var tables = TableMap.GetMaps().Where(x => x.AutoCreate).ToList();
@@ -48,10 +48,7 @@ namespace WangSql.Migrate.BuildProviders.CodeFirst
             {
                 var item = table.Columns[i];
                 ResolveColumnInfo(item);
-                string colSql = "";
-
-                colSql = $"{_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {item.DataType} {(item.IsNotNull ? "not null" : "")}";
-
+                string colSql = $"{_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {item.DataType} {(item.IsNotNull ? "not null" : "")}";
                 if (item.IsPrimaryKey)
                 {
                     colSql += " primary key";

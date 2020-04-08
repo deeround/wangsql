@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using WangSql.BuildProviders.Formula;
 
 namespace WangSql
 {
@@ -187,6 +189,8 @@ namespace WangSql
         private string MethodCallExpressionProvider(Expression exp)
         {
             MethodCallExpression mce = exp as MethodCallExpression;
+            var reflectedType = mce.Method.ReflectedType;
+
             if (mce.Method.Name == "Contains")
             {
                 if (mce.Object == null)
@@ -205,37 +209,21 @@ namespace WangSql
             {
                 var name = ExpressionRouter(mce.Object);
                 var value = ExpressionRouter(mce.Arguments[0]);
-                _dbParamters[_dbParamters.Count - 1].Value = string.Format("%{0}%", _dbParamters[_dbParamters.Count - 1].Value);
+                _dbParamters[_dbParamters.Count - 1].Value = string.Format("{0}%", _dbParamters[_dbParamters.Count - 1].Value);
                 return string.Format("{0} like {1}", name, value);
             }
             else if (mce.Method.Name == "EndsWith")
             {
                 var name = ExpressionRouter(mce.Object);
                 var value = ExpressionRouter(mce.Arguments[0]);
-                _dbParamters[_dbParamters.Count - 1].Value = string.Format("%{0}%", _dbParamters[_dbParamters.Count - 1].Value);
+                _dbParamters[_dbParamters.Count - 1].Value = string.Format("%{0}", _dbParamters[_dbParamters.Count - 1].Value);
                 return string.Format("{0} like {1}", name, value);
             }
-
-            //自定义函数
-            else if (mce.Method.Name.StartsWith("F_"))
+            else if (typeof(IFormulaProvider).IsAssignableFrom(reflectedType))//自定义函数
             {
                 var name = ExpressionRouter(mce.Arguments[0]);
-                return string.Format("{0}({1})", mce.Method.Name.Split('_').Last(), name);
-            }
-            else if (mce.Method.Name.StartsWith("COMPARE"))
-            {
-                var name = ExpressionRouter(mce.Arguments[0]);
-                return string.Format("{0}", name);
-            }
-            else if (mce.Method.Name.StartsWith("IsNull"))
-            {
-                var name = ExpressionRouter(mce.Arguments[0]);
-                return string.Format("{0} is null", name);
-            }
-            else if (mce.Method.Name.StartsWith("IsNotNull"))
-            {
-                var name = ExpressionRouter(mce.Arguments[0]);
-                return string.Format("{0} is not null", name);
+                MethodInfo methodInfo = typeof(IFormulaProvider).GetMethod(mce.Method.Name + "_method");//加载方法
+                return methodInfo.Invoke(_dbProvider.FormulaProvider, new object[] { name })?.ToString();//执行
             }
             else
             {

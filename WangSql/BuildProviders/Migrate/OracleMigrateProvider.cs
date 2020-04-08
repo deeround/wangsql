@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WangSql.Migrate.BuildProviders.CodeFirst
+namespace WangSql
 {
-    public class OracleMigrateProvider : IMigrateProvider
+    public class OracleMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
         private SqlMapper _sqlMapper;
 
-        public void Run(SqlMapper sqlMapper)
+        public override void Run(SqlMapper sqlMapper)
         {
             _sqlMapper = sqlMapper;
             var tables = TableMap.GetMaps().Where(x => x.AutoCreate).ToList();

@@ -232,8 +232,8 @@ namespace WangSql
 
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
         {
-            total = SqlFactory.DbProvider.BuildProvider.BuildPageCountSql<T>(this, sql, param);
-            var rr = SqlFactory.DbProvider.BuildProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            total = SqlFactory.DbProvider.PageProvider.BuildPageCountSql<T>(this, sql, param);
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
             return rr;
         }
 
@@ -394,8 +394,8 @@ namespace WangSql
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
         {
             CheckConnTime();
-            total = SqlFactory.DbProvider.BuildProvider.BuildPageCountSql<T>(this, sql, param);
-            var rr = SqlFactory.DbProvider.BuildProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            total = SqlFactory.DbProvider.PageProvider.BuildPageCountSql<T>(this, sql, param);
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
             return rr;
         }
 
@@ -509,8 +509,8 @@ namespace WangSql
 
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
         {
-            total = SqlFactory.DbProvider.BuildProvider.BuildPageCountSql<T>(this, sql, param);
-            var rr = SqlFactory.DbProvider.BuildProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            total = SqlFactory.DbProvider.PageProvider.BuildPageCountSql<T>(this, sql, param);
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
             return rr;
         }
 

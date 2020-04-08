@@ -34,8 +34,7 @@ namespace WangSql.Test
             }
 
             //创建表
-            Migrate.BuildProviders.CodeFirst.IMigrateProvider build = new Migrate.BuildProviders.CodeFirst.SqliteMigrateProvider();
-            build.Run(_sqlMapper);
+            _sqlMapper.SqlFactory.DbProvider.MigrateProvider.Run(_sqlMapper);
 
             //删除数据
             _sqlMapper.Entity<Models.UserInfo>().Delete();
@@ -90,7 +89,7 @@ namespace WangSql.Test
             _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
 
             //查询
-            var users = _sqlMapper.Entity<Models.UserInfo>().ToList();
+            var users = _sqlMapper.Entity<Models.UserInfo>().Where(op=>_sqlMapper.SqlFactory.DbProvider.FormulaProvider.IsNull(op)).ToList();
         }
     }
 }

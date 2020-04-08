@@ -32,8 +32,7 @@ namespace WangSql.Test
             }
 
             //创建表
-            Migrate.BuildProviders.CodeFirst.IMigrateProvider build = new Migrate.BuildProviders.CodeFirst.PgsqlMigrateProvider();
-            build.Run(_sqlMapper);
+            _sqlMapper.SqlFactory.DbProvider.MigrateProvider.Run(_sqlMapper);
 
             //删除数据
             _sqlMapper.Entity<Models.UserInfo>().Delete();

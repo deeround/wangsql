@@ -8,8 +8,7 @@ namespace WangSql
 {
     public static class SqlMapperExtensions
     {
-        public static DefaultQuery<T> Entity<T>(this ISqlExe sqlExe)
-            where T : class
+        public static DefaultQuery<T> Entity<T>(this ISqlExe sqlExe) where T : class
         {
             return new DefaultQuery<T>(sqlExe);
         }

@@ -54,8 +54,7 @@ namespace WangSql
         public bool IsModify { get; set; }
     }
 
-    public class DefaultQuery<T>
-        where T : class
+    public class DefaultQuery<T> where T : class
     {
         private readonly ISqlExe _sqlExe;
 
@@ -345,99 +344,6 @@ namespace WangSql
                 sod1.Add(op.Name, sod[op.PropertyName]);
             });
             return sod1;
-        }
-    }
-
-    public class DbOperator
-    {
-        public static bool operator ==(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public static bool operator !=(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public static bool operator >(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public static bool operator <(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public static bool operator >=(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public static bool operator <=(DbOperator value1, object value2)
-        {
-            return false;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-    }
-
-    public class DBMS
-    {
-        private static readonly DbOperator _tempDbOperator = new DbOperator();
-
-        public static DbOperator F_COUNT(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static DbOperator F_SUM(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static DbOperator F_AVG(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static DbOperator F_MAX(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static DbOperator F_MIN(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static DbOperator COMPARE(object value)
-        {
-            return _tempDbOperator;
-        }
-
-        public static bool IsNull(object value)
-        {
-            return true;
-        }
-
-        public static bool IsNotNull(object value)
-        {
-            return true;
         }
     }
 }

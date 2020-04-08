@@ -1,4 +1,4 @@
-﻿namespace WangSql.Migrate.BuildProviders.CodeFirst
+﻿namespace WangSql
 {
     public interface IMigrateProvider
     {

@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using WangSql.BuildProviders.Formula;
 
 namespace WangSql
 {
@@ -38,18 +39,9 @@ namespace WangSql
             ParameterPrefix = parameterPrefix;
             UseQuotationInSql = useQuotationInSql;
             Debug = debug;
-            BuildProvider = new DefaultPageProvider();
-
-            //oracle
-            if (connectionType.ToLower().Contains("oracle"))
-            {
-                BuildProvider = new OraclePageProvider();
-            }
-            //oracle
-            else if (connectionType.ToLower().Contains("pgsql"))
-            {
-                BuildProvider = new PgsqlPageProvider();
-            }
+            PageProvider = new DefaultPageProvider();
+            MigrateProvider = new DefaultMigrateProvider();
+            FormulaProvider = new DefaultFormulaProvider();
         }
 
         public string ConnectionString { get; }
@@ -60,7 +52,24 @@ namespace WangSql
         public bool UseParameterPrefixInSql { get; }
         public bool UseQuotationInSql { get; }
         public bool Debug { get; }
-        public IPageProvider BuildProvider { get; }
+        public IPageProvider PageProvider { get; private set; }
+        public IMigrateProvider MigrateProvider { get; private set; }
+        public IFormulaProvider FormulaProvider { get; private set; }
+
+        public void SetPageProvider(IPageProvider pageProvider)
+        {
+            PageProvider = pageProvider;
+        }
+
+        public void SetMigrateProvider(IMigrateProvider migrateProvider)
+        {
+            MigrateProvider = migrateProvider;
+        }
+
+        public void SetFormulaProvider(IFormulaProvider formulaProvider)
+        {
+            FormulaProvider = formulaProvider;
+        }
 
         public IDbConnection CreateConnection()
         {
@@ -149,10 +158,12 @@ namespace WangSql
                 {
                     if (_dbProvider == null)
                     {
+                        SetBuildProvider(dbProvider);
                         _dbProvider = dbProvider;
                     }
                 }
             }
+            SetBuildProvider(dbProvider);
             DbProviderNewCache[name] = dbProvider;
         }
         /// <summary>
@@ -170,6 +181,7 @@ namespace WangSql
                 }
                 foreach (var item in dbProviders)
                 {
+                    SetBuildProvider(item);
                     if (_dbProvider == null)
                     {
                         lock (_obj_lock)
@@ -221,6 +233,26 @@ namespace WangSql
             return Get(null);
         }
 
+
+        private static void SetBuildProvider(DbProvider dbProvider)
+        {
+            var type = dbProvider.ConnectionType?.ToLower();
+            if (type.Contains("oracle"))
+            {
+                dbProvider.SetPageProvider(new OraclePageProvider());
+                dbProvider.SetMigrateProvider(new OracleMigrateProvider());
+            }
+            else if (type.Contains("pgsql"))
+            {
+                dbProvider.SetPageProvider(new PgsqlPageProvider());
+                dbProvider.SetMigrateProvider(new PgsqlMigrateProvider());
+            }
+            else if (type.Contains("sqlite"))
+            {
+                dbProvider.SetPageProvider(new SqlitePageProvider());
+                dbProvider.SetMigrateProvider(new SqliteMigrateProvider());
+            }
+        }
 
         private static IList<DbProvider> GetConfigFile(string config)
         {
