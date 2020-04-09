@@ -10,6 +10,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using WangSql.BuildProviders.Formula;
+using WangSql.BuildProviders.Migrate;
+using WangSql.BuildProviders.Page;
 
 namespace WangSql
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.BuildProviders.Migrate
 {
     public class OracleMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {

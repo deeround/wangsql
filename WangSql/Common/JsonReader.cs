@@ -6,7 +6,7 @@ using System.Text;
 
 namespace WangSql
 {
-    public class JsonReader
+    internal class JsonReader
     {
         private TextReader _textReader = null;
         private int _endCount = 0;

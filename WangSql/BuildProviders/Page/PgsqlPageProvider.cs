@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.BuildProviders.Page
 {
     public class PgsqlPageProvider : DefaultPageProvider, IPageProvider
     {

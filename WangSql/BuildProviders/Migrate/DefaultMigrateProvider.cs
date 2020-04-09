@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.BuildProviders.Migrate
 {
     public class DefaultMigrateProvider : IMigrateProvider
     {

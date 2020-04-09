@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WangSql
+namespace WangSql.BuildProviders.Page
 {
     public interface IPageProvider
     {
