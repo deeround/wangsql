@@ -241,16 +241,19 @@ namespace WangSql
             {
                 dbProvider.SetPageProvider(new OraclePageProvider());
                 dbProvider.SetMigrateProvider(new OracleMigrateProvider());
+                dbProvider.SetFormulaProvider(new OracleFormulaProvider());
             }
             else if (type.Contains("pgsql"))
             {
                 dbProvider.SetPageProvider(new PgsqlPageProvider());
                 dbProvider.SetMigrateProvider(new PgsqlMigrateProvider());
+                dbProvider.SetFormulaProvider(new PgsqlFormulaProvider());
             }
             else if (type.Contains("sqlite"))
             {
                 dbProvider.SetPageProvider(new SqlitePageProvider());
                 dbProvider.SetMigrateProvider(new SqliteMigrateProvider());
+                dbProvider.SetFormulaProvider(new SqliteFormulaProvider());
             }
         }
 

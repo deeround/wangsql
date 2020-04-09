@@ -34,4 +34,17 @@ namespace WangSql.Test.Models
         [WangSql.Column(DataType = SimpleStandardType.Text)]
         public string JieShao { get; set; }
     }
+
+    public class UserInfo1
+    {
+        public UserInfo1()
+        {
+
+        }
+
+       
+        public string UserName { get; set; }
+        public bool? Sex { get; set; }
+    }
+
 }
