@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace WangSql.Test
@@ -89,6 +90,10 @@ namespace WangSql.Test
             userInfo.CreateDateTime = DateTime.Now;
             _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo);
 
+            Models.UserInfo userInfo1 = new Models.UserInfo(Guid.NewGuid().ToString(), "deeround1", 9, false, text);
+            userInfo1.CreateDateTime = DateTime.Now;
+            _sqlMapper.Entity<Models.UserInfo>().Insert(userInfo1);
+
             //查询
             var users = _sqlMapper.Entity<Models.UserInfo>()
                 .GroupBy(op => new { op.UserName, op.Sex })
@@ -104,7 +109,8 @@ namespace WangSql.Test
                 .ToList();
 
             sql = "select * from tb_user";
-            var users2 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
+            var users2 = _sqlMapper.Query<Dictionary<string, object>>(sql, null).ToList();
+            var users3 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
 
         }
     }

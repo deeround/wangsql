@@ -48,7 +48,7 @@ namespace WangSql.BuildProviders.Migrate
             {
                 var item = table.Columns[i];
                 ResolveColumnInfo(item);
-                string colSql = $"{_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {item.DataType} {(item.IsNotNull ? "not null" : "")}";
+                string colSql = $"{_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {ResolveDataType(item)} {(item.IsNotNull ? "not null" : "")}";
                 if (item.IsPrimaryKey)
                 {
                     colSql += " primary key";
@@ -101,7 +101,7 @@ namespace WangSql.BuildProviders.Migrate
                 case SimpleStandardType.Varchar:
                     {
                         if (column.Length <= 0) column.Length = 50;
-                        return $"nvarchar({column.Length})";
+                        return $"varchar({column.Length})";
                     }
                 case SimpleStandardType.Text:
                     {
@@ -110,12 +110,12 @@ namespace WangSql.BuildProviders.Migrate
                 case SimpleStandardType.Char:
                     {
                         column.Length = 1;
-                        return $"nvarchar(1)";
+                        return $"varchar(1)";
                     }
                 case SimpleStandardType.Enum:
                     {
                         if (column.Length <= 0) column.Length = 50;
-                        return $"nvarchar({column.Length})";
+                        return $"varchar({column.Length})";
                     }
                 case SimpleStandardType.DateTime:
                     {
@@ -128,7 +128,7 @@ namespace WangSql.BuildProviders.Migrate
                 case SimpleStandardType.Boolean:
                     {
                         column.Length = 1;
-                        return $"nvarchar(1)";
+                        return $"varchar(1)";
                     }
                 default:
                     {
