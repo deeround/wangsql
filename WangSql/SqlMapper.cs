@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using WangSql.BuildProviders.Formula;
 
 namespace WangSql
 {
     public interface ISqlExe
     {
         SqlFactory SqlFactory { get; }
+
+        /// <summary>
+        /// 方便调用
+        /// </summary>
+        IFormulaProvider Formula { get; }
 
         /// <summary>
         ///     SQL执行
@@ -35,6 +41,17 @@ namespace WangSql
         /// <param name="param">参数（Dictionary、Simple、Class）（注意：枚举一律会转换成字符串处理）</param>
         /// <returns></returns>
         IEnumerable<T> Query<T>(string sql, object param);
+
+        /// <summary>
+        ///     SQL查询（分页不返回总数）
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize);
 
         /// <summary>
         ///     SQL查询（分页）
@@ -159,6 +176,8 @@ namespace WangSql
 
         public SqlFactory SqlFactory { get; private set; }
 
+        public IFormulaProvider Formula { get { return SqlFactory.DbProvider.FormulaProvider; } }
+
         public ISqlTrans BeginTransaction()
         {
             return new SqlTrans(SqlFactory);
@@ -230,6 +249,12 @@ namespace WangSql
             }
         }
 
+        public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize)
+        {
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            return rr;
+        }
+
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
         {
             total = SqlFactory.DbProvider.PageProvider.BuildPageCountSql<T>(this, sql, param);
@@ -295,6 +320,8 @@ namespace WangSql
         }
 
         public SqlFactory SqlFactory { get; private set; }
+
+        public IFormulaProvider Formula { get { return SqlFactory.DbProvider.FormulaProvider; } }
 
         public ISqlTrans BeginTransaction()
         {
@@ -391,6 +418,13 @@ namespace WangSql
             }
         }
 
+        public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize)
+        {
+            CheckConnTime();
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            return rr;
+        }
+
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
         {
             CheckConnTime();
@@ -445,6 +479,8 @@ namespace WangSql
         }
 
         public SqlFactory SqlFactory { get; private set; }
+
+        public IFormulaProvider Formula { get { return SqlFactory.DbProvider.FormulaProvider; } }
 
         public void Commit()
         {
@@ -505,6 +541,12 @@ namespace WangSql
                     }
                 }
             }
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize)
+        {
+            var rr = SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, pageIndex, pageSize);
+            return rr;
         }
 
         public IEnumerable<T> Query<T>(string sql, object param, int pageIndex, int pageSize, out int total)
