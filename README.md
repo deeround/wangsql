@@ -114,12 +114,12 @@ var r = _sqlMapper.Query<Dictionary<string, object>>(sql, null).ToList();
 //传参方式1 直接传入简单类型的值
 var sql = "select * from tb_user where userid=#userid#";
 var r1 = _sqlMapper.Query<Dictionary<string, object>>(sql, userid).ToList();
+
+//传参方式2 传入键值对
 Dictionary<string, object>  sod = new Dictionary<string, object>()
 {
     { "userid", userid }
 };
-
-//传参方式2 传入键值对
 var r2 = _sqlMapper.Query<Dictionary<string, object>>(sql, sod).ToList();
 
 //传参方式3 传入实体
@@ -144,12 +144,12 @@ var r = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
 //传参方式1 直接传入简单类型的值
 var sql = "select * from tb_user where userid=#userid#";
 var r1 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, userid);
+
+//传参方式2 传入键值对
 Dictionary<string, object>  sod = new Dictionary<string, object>()
 {
     { "userid", userid }
 };
-
-//传参方式2 传入键值对
 var r2 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, sod);
 
 //传参方式3 传入实体
