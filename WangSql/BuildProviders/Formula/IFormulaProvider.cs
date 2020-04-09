@@ -176,45 +176,7 @@ namespace WangSql.BuildProviders.Formula
         #endregion
 
         #region 转换函数
-        /// <summary>
-        /// 转成字符
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        DbOperator ToChar(object value);
-        string ToChar_method(object value);
-
-        /// <summary>
-        /// 日期/数值转成字符
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        DbOperator ToChar(object value, string f);
-        string ToChar_method(object value, string f);
-
-        /// <summary>
-        /// 字符转成日期
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        DbOperator ToDate(object value, string f);
-        string ToDate_method(object value, string f);
-
-        /// <summary>
-        /// 字符转成时间戳
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        DbOperator ToTimestamp(object value, string f);
-        string ToTimestamp_method(object value, string f);
-
-        /// <summary>
-        /// 字符转成数值
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        DbOperator ToNumber(object value, string f);
-        string ToNumber_method(object value, string f);
+        
         #endregion
 
         #region 其他函数

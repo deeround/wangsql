@@ -217,55 +217,7 @@ namespace WangSql.BuildProviders.Formula
         #endregion
 
         #region MyRegion
-        public DbOperator ToChar(object value)
-        {
-            return _dbOperator;
-        }
-
-        public string ToChar_method(object value)
-        {
-            return $"TO_CHAR({value})";
-        }
-
-        public DbOperator ToChar(object value, string f)
-        {
-            return _dbOperator;
-        }
-
-        public string ToChar_method(object value, string f)
-        {
-            return $"TO_CHAR({value},{f})";
-        }
-
-        public DbOperator ToDate(object value, string f)
-        {
-            return _dbOperator;
-        }
-
-        public string ToDate_method(object value, string f)
-        {
-            return $"TO_DATE({value},{f})";
-        }
-
-        public DbOperator ToTimestamp(object value, string f)
-        {
-            return _dbOperator;
-        }
-
-        public string ToTimestamp_method(object value, string f)
-        {
-            return $"TO_TIMESTAMP({value},{f})";
-        }
-
-        public DbOperator ToNumber(object value, string f)
-        {
-            return _dbOperator;
-        }
-
-        public string ToNumber_method(object value, string f)
-        {
-            return $"TO_NUMBER({value},{f})";
-        }
+        
         #endregion
 
         #region MyRegion
