@@ -153,6 +153,11 @@ namespace WangSql
             return _sqlExe.Query<T>(ResolveSqlPart(), ResolveParamter()).ToList();
         }
 
+        public IList<T> ToPaged(int pageIndex, int pageSize)
+        {
+            return _sqlExe.Query<T>(ResolveSqlPart(), ResolveParamter(), pageIndex, pageSize).ToList();
+        }
+
         public IList<T> ToPaged(int pageIndex, int pageSize, out int total)
         {
             return _sqlExe.Query<T>(ResolveSqlPart(), ResolveParamter(), pageIndex, pageSize, out total).ToList();
@@ -444,6 +449,11 @@ namespace WangSql
         public IList<R> ToList()
         {
             return _sqlExe.Query<R>(ResolveSqlPart(), ResolveParamter()).ToList();
+        }
+
+        public IList<R> ToPaged(int pageIndex, int pageSize)
+        {
+            return _sqlExe.Query<R>(ResolveSqlPart(), ResolveParamter(), pageIndex, pageSize).ToList();
         }
 
         public IList<R> ToPaged(int pageIndex, int pageSize, out int total)

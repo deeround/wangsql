@@ -208,24 +208,7 @@ namespace WangSql
 
         public T QueryFirstOrDefault<T>(string sql, object param)
         {
-            var conn = SqlFactory.CreateConnection();
-            using (conn)
-            {
-                var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
-                using (cmd)
-                {
-                    conn.Open();
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var next = SqlFactory.ResultMap.Deserializer<T>(reader);
-                            return (T)next;
-                        }
-                    }
-                }
-            }
-            return default;
+            return SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, 1, 1).FirstOrDefault();
         }
 
         public IEnumerable<T> Query<T>(string sql, object param)
@@ -377,19 +360,7 @@ namespace WangSql
         public T QueryFirstOrDefault<T>(string sql, object param)
         {
             CheckConnTime();
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text, _commandTimeout);
-            using (cmd)
-            {
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
-                        return (T)next;
-                    }
-                }
-            }
-            return default;
+            return SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, 1, 1).FirstOrDefault();
         }
 
         [Obsolete("仅开发调试使用")]
@@ -510,20 +481,7 @@ namespace WangSql
 
         public T QueryFirstOrDefault<T>(string sql, object param)
         {
-            var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
-            cmd.Transaction = _trans;
-            using (cmd)
-            {
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var next = SqlFactory.ResultMap.Deserializer<T>(reader);
-                        return (T)next;
-                    }
-                }
-            }
-            return default;
+            return SqlFactory.DbProvider.PageProvider.BuildPageSql<T>(this, sql, param, 1, 1).FirstOrDefault();
         }
 
         public IEnumerable<T> Query<T>(string sql, object param)

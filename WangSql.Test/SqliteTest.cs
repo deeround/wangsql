@@ -21,11 +21,12 @@ namespace WangSql.Test
             //        );
             DbProviderManager.Set();
             var _sqlMapper = new SqlMapper();
+            string sql = null;
 
             //删除表
             try
             {
-                string sql = $"DROP TABLE {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(TableMap.GetMap<Models.UserInfo>().Name)}";
+                sql = $"DROP TABLE {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(TableMap.GetMap<Models.UserInfo>().Name)}";
                 _sqlMapper.Execute(sql, null);
             }
             catch (Exception ex)
@@ -101,6 +102,9 @@ namespace WangSql.Test
                 .Having(op => _sqlMapper.Formula.Count(op.UserName) > 0)
                 .Select(op => new { op.UserName, op.Sex })
                 .ToList();
+
+            sql = "select * from tb_user";
+            var users2 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
 
         }
     }

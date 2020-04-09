@@ -16,11 +16,11 @@ namespace WangSql
         {
             if (pageIndex == 1)
             {
-                sql = $@"SELECT llll.*, ROWNUM RN FROM ({sql}) llll WHERE ROWNUM <= {pageSize}";
+                sql = $@"SELECT llll.*, ROWNUM FROM ({sql}) llll WHERE ROWNUM <= {pageSize}";
             }
             else
             {
-                sql = $@"SELECT lllll.* FROM (SELECT llll.*,ROWNUM RN FROM ({sql}) llll) lllll WHERE RN BETWEEN {pageIndex * pageSize + 1} AND {(pageIndex - 1) * pageSize}";
+                sql = $@"SELECT lllll.* FROM (SELECT llll.*,ROWNUM FROM ({sql}) llll) lllll WHERE ROWNUM BETWEEN {pageIndex * pageSize + 1} AND {(pageIndex - 1) * pageSize}";
             }
             return sqlMapper.Query<T>(sql, param);
         }
