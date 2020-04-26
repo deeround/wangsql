@@ -20,7 +20,7 @@ namespace WangSql.BuildProviders.Page
             }
             else
             {
-                sql = $@"SELECT lllll.* FROM (SELECT llll.*,ROWNUM FROM ({sql}) llll) lllll WHERE ROWNUM BETWEEN {pageIndex * pageSize + 1} AND {(pageIndex - 1) * pageSize}";
+                sql = $@"SELECT lllll.* FROM (SELECT llll.*,ROWNUM FROM ({sql}) llll) lllll WHERE ROWNUM BETWEEN {(pageIndex - 1) * pageSize} AND {pageIndex * pageSize + 1}";
             }
             return sqlMapper.Query<T>(sql, param);
         }
