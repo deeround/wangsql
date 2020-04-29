@@ -221,26 +221,22 @@ namespace WangSql
             }
             else if (typeof(IFormulaProvider).IsAssignableFrom(reflectedType))//自定义函数
             {
-                var objs = new List<object>();
+                var paramters = new List<FormulaParamter>();
                 foreach (var item in mce.Arguments)
                 {
                     if (item is ConstantExpression item1)
                     {
                         var obj = item1.Value;
-                        if (item1.Value is string)
-                        {
-                            obj = $"'{obj}'";
-                        }
-                        objs.Add(obj);
+                        paramters.Add(new FormulaParamter(true, obj));
                     }
                     else if (item is MemberExpression item2)
                     {
                         var obj = ExpressionRouter(item2);
-                        objs.Add(obj);
+                        paramters.Add(new FormulaParamter(false, obj));
                     }
                 }
                 MethodInfo methodInfo = typeof(IFormulaProvider).GetMethod(mce.Method.Name + "_method");//加载方法
-                return methodInfo.Invoke(_dbProvider.FormulaProvider, objs.ToArray())?.ToString();//执行
+                return methodInfo.Invoke(_dbProvider.FormulaProvider, new object[] { paramters.ToArray() })?.ToString();//执行
             }
             else
             {

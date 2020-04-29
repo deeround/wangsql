@@ -103,7 +103,7 @@ namespace WangSql.Test
                 .ToList();
             var users1 = _sqlMapper.Entity<Models.UserInfo, Models.UserInfo1>()
                 .GroupBy(op => new { op.UserName, op.Sex })
-                //.Having(op => _sqlMapper.SqlFactory.DbProvider.FormulaProvider.Count(op.UserName) > 0)
+                //.Having(op => _sqlMapper.SqlFactory.DbProvider.FormulaProvider.Replace(op.UserName, "a", "b") > 0)
                 .Having(op => _sqlMapper.Formula.Count(op.UserName) > 0)
                 .Select(op => new { op.UserName, op.Sex })
                 .ToList();
