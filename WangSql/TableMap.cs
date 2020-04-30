@@ -27,12 +27,7 @@ namespace WangSql
                     x => !x.StartsWith("Microsoft") &&
                          !x.StartsWith("System") &&
                          !x.StartsWith("runtime") &&
-                         !x.StartsWith("Newtonsoft") &&
-                         !x.StartsWith("AutoMapper") &&
-                         !x.StartsWith("FluentValidation") &&
-                         !x.StartsWith("NLog") &&
-                         !x.StartsWith("WangSql") &&
-                         !x.StartsWith("Swashbuckle"))
+                         !x.StartsWith("WangSql"))
                 .ToList()
                 .ForEach(item =>
                 {
