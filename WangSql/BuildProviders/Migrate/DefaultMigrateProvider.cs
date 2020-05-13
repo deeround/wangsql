@@ -6,7 +6,7 @@ namespace WangSql.BuildProviders.Migrate
 {
     public class DefaultMigrateProvider : IMigrateProvider
     {
-        public virtual void Run(SqlMapper sqlMapper)
+        public virtual void Run(ISqlMapper sqlMapper)
         {
             throw new SqlException("未实现迁移工具");
         }

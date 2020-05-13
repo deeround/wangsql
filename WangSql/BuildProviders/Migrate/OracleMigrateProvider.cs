@@ -7,9 +7,9 @@ namespace WangSql.BuildProviders.Migrate
 {
     public class OracleMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
-        private SqlMapper _sqlMapper;
+        private ISqlMapper _sqlMapper;
 
-        public override void Run(SqlMapper sqlMapper)
+        public override void Run(ISqlMapper sqlMapper)
         {
             _sqlMapper = sqlMapper;
             var tables = TableMap.GetMaps().Where(x => x.AutoCreate).ToList();

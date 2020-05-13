@@ -2,6 +2,6 @@
 {
     public interface IMigrateProvider
     {
-        void Run(SqlMapper sqlMapper);
+        void Run(ISqlMapper sqlMapper);
     }
 }
