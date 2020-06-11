@@ -295,7 +295,7 @@ namespace WangSql
                     op.Paramters.ForEach(o => sod.Add(o.Name, o.Value));
                 });
             }
-            return _sqlExe.Execute(sql, null);
+            return _sqlExe.Execute(sql, sod);
         }
 
         private string GetTable()
@@ -593,7 +593,7 @@ namespace WangSql
                     op.Paramters.ForEach(o => sod.Add(o.Name, o.Value));
                 });
             }
-            return _sqlExe.Execute(sql, null);
+            return _sqlExe.Execute(sql, sod);
         }
 
         private string GetTable()
