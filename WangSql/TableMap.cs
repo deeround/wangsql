@@ -126,7 +126,7 @@ namespace WangSql
         private static TableInfo GetTableInfo(Type type)
         {
             TableInfo result = new TableInfo();
-            var table = (TableAttribute)type.GetCustomAttribute(typeof(TableAttribute), false);
+            var table = (TableAttribute)type.GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
             if (table == null)//没有特性
             {
                 table = new TableAttribute
@@ -141,12 +141,12 @@ namespace WangSql
             result.AutoCreate = table.AutoCreate;
             foreach (var item in type.GetProperties())
             {
-                var ignoreColumn = (IgnoreColumnAttribute)item.GetCustomAttribute(typeof(IgnoreColumnAttribute), false);
+                var ignoreColumn = (IgnoreColumnAttribute)item.GetCustomAttributes(typeof(IgnoreColumnAttribute), false).FirstOrDefault();
                 if (ignoreColumn != null)
                 {
                     continue;
                 }
-                var column = (ColumnAttribute)item.GetCustomAttribute(typeof(ColumnAttribute), false);
+                var column = (ColumnAttribute)item.GetCustomAttributes(typeof(ColumnAttribute), false).FirstOrDefault();
                 if (column == null)
                 {
                     column = new ColumnAttribute

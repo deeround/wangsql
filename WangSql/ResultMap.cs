@@ -57,7 +57,8 @@ namespace WangSql
                     {
                         op.SetValue(
                             entity,
-                            TypeMap.ConvertToType(dict.First(x => x.Key.ToUpper().Equals(op.Name.ToUpper())).Value, op.PropertyType)
+                            TypeMap.ConvertToType(dict.First(x => x.Key.ToUpper().Equals(op.Name.ToUpper())).Value, op.PropertyType),
+                            null
                             );
                     }
                 });
