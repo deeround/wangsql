@@ -256,7 +256,7 @@ namespace WangSql
                     conn.Open();
                     var obj = cmd.ExecuteScalar();
                     var obj1 = TypeMap.ConvertToType(obj, typeof(T));
-                    return (T)obj1;
+                    return obj1 == null ? default(T) : (T)obj1;
                 }
             }
         }
@@ -412,7 +412,7 @@ namespace WangSql
             {
                 var obj = cmd.ExecuteScalar();
                 var obj1 = TypeMap.ConvertToType(obj, typeof(T));
-                return (T)obj1;
+                return obj1 == null ? default(T) : (T)obj1;
             }
         }
 
@@ -527,7 +527,7 @@ namespace WangSql
             {
                 var obj = cmd.ExecuteScalar();
                 var obj1 = TypeMap.ConvertToType(obj, typeof(T));
-                return (T)obj1;
+                return obj1 == null ? default(T) : (T)obj1;
             }
         }
 
