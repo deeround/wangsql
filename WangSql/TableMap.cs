@@ -7,6 +7,8 @@ using System.Reflection;
 
 namespace WangSql
 {
+    public interface IDataConfig { }
+
     public static class TableMap
     {
         /// <summary>
@@ -21,28 +23,41 @@ namespace WangSql
         }
         private static void InitMap()
         {
-            var types = new List<Type>();//动态获取所有程序集类型（排除框架）
+            var assemblyTypes = new List<Type>();//动态获取所有程序集类型（排除框架）
             System.IO.Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory, "*.dll")
                 .Where(
                     x => !x.StartsWith("Microsoft") &&
                          !x.StartsWith("System") &&
                          !x.StartsWith("runtime") &&
-                         !x.StartsWith("WangSql"))
+                         !x.StartsWith("Newtonsoft") &&
+                         !x.StartsWith("AutoMapper") &&
+                         !x.StartsWith("FluentValidation") &&
+                         !x.StartsWith("NLog") &&
+                         !x.StartsWith("WangSql") &&
+                         !x.StartsWith("Swashbuckle"))
                 .ToList()
                 .ForEach(item =>
                 {
-                    types.AddRange(
+                    assemblyTypes.AddRange(
                         Assembly.LoadFile(item).GetTypes()
                         .Select(x => x.AssemblyQualifiedName)
                         .Select(x => Type.GetType(x))
-                        .Where(op => op.GetCustomAttributes(typeof(TableAttribute), false).Any())
                     );
                 });
+            assemblyTypes = assemblyTypes.Where(type => type.IsClass && !type.IsAbstract).ToList();
 
-            foreach (var type in types)
+            var attrClass = assemblyTypes.Where(op => op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
+            foreach (var type in attrClass)
             {
                 var map = GetMap(type);
                 SetMap(type, map);
+            }
+
+
+            var flutClass = assemblyTypes.Where(x => typeof(IDataConfig).IsAssignableFrom(x)).ToList();
+            foreach (var type in flutClass)
+            {
+                Activator.CreateInstance(type);
             }
         }
 
