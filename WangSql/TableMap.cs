@@ -19,22 +19,15 @@ namespace WangSql
 
         static TableMap()
         {
-            InitMap();
-        }
-        private static void InitMap()
-        {
-            var assemblyTypes = new List<Type>();//动态获取所有程序集类型（排除框架）
+            #region 初始化
+            var assemblyTypes = new List<Type>();
             System.IO.Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory, "*.dll")
                 .Where(
                     x => !x.StartsWith("Microsoft") &&
                          !x.StartsWith("System") &&
                          !x.StartsWith("runtime") &&
-                         !x.StartsWith("Newtonsoft") &&
-                         !x.StartsWith("AutoMapper") &&
-                         !x.StartsWith("FluentValidation") &&
-                         !x.StartsWith("NLog") &&
-                         !x.StartsWith("WangSql") &&
-                         !x.StartsWith("Swashbuckle"))
+                         !x.StartsWith("Newtonsoft")
+                         )
                 .ToList()
                 .ForEach(item =>
                 {
@@ -42,10 +35,12 @@ namespace WangSql
                         Assembly.LoadFile(item).GetTypes()
                         .Select(x => x.AssemblyQualifiedName)
                         .Select(x => Type.GetType(x))
+                        .Where(type => (type.IsClass || type.IsInterface) && !type.IsAbstract)
                     );
                 });
             assemblyTypes = assemblyTypes.Where(type => type.IsClass && !type.IsAbstract).ToList();
 
+            //特性方式
             var attrClass = assemblyTypes.Where(op => op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
             foreach (var type in attrClass)
             {
@@ -53,12 +48,13 @@ namespace WangSql
                 SetMap(type, map);
             }
 
-
+            //接口方式
             var flutClass = assemblyTypes.Where(x => typeof(IDataConfig).IsAssignableFrom(x)).ToList();
             foreach (var type in flutClass)
             {
                 Activator.CreateInstance(type);
             }
+            #endregion
         }
 
         public static TableMapTable<T> Entity<T>() where T : class
