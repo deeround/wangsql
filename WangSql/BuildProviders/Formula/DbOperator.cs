@@ -6,6 +6,7 @@ namespace WangSql.BuildProviders.Formula
 {
     public class DbOperator
     {
+
         public static bool operator ==(DbOperator value1, object value2)
         {
             return false;

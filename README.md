@@ -203,3 +203,133 @@ var sod = new Dictionary<string, object>()
 var r = _sqlMapper.Execute(sql, sod);
 ~~~
 
+##### 实体操作
+
+使用实体实现CRUD操作。
+
+~~~ c#
+SqlMapper.Entity<UserInfo>().FirstOrDefault();
+SqlMapper.Entity<UserInfo>().Where(x => x.UserId == id).FirstOrDefault();
+SqlMapper.Entity<UserInfo>().ToList();
+SqlMapper.Entity<UserInfo>().Where(x => x.UserId == id).ToList();
+SqlMapper.Entity<UserInfo>().ToPaged(pageInfo.PageIndex, pageInfo.PageSize, out total)
+SqlMapper.Entity<UserInfo>().Insert(model);
+SqlMapper.Entity<UserInfo>().Set(x => new { x.UpdateUserId, x.UpdateUserName, x.UpdateDateTime }, false).Insert(model);
+SqlMapper.Entity<UserInfo>().Update(model);
+SqlMapper.Entity<UserInfo>().Set(x => new
+                {
+                    x.UserId,
+                    x.UserName,
+                    x.UserCode,
+                    x.Email,
+                    x.Mobile,
+                    x.Landline,
+                    x.Avatar,
+                    x.UpdateUserId,
+                    x.UpdateUserName,
+                    x.UpdateDateTime,
+                }).Update(model);
+SqlMapper.Entity<UserInfo>().Delete(id);
+~~~
+
+### 表映射
+
+~~~ c#
+public class UserDataConfig : IDataConfig
+    {
+        public UserDataConfig()
+        {
+            //Fluent API
+            var map = TableMap.Entity<Models.UserInfo>().ToTable("tb_sys_user", "用户", true);
+            map.HasColumn(x => x.UserId).Name("UserId").Length(50).Comment("ID").IsPrimaryKey().IsNotNull();
+            map.HasColumn(x => x.UserName).Name("UserName").Length(50).Comment("用户名").IsUnique().IsNotNull();
+            map.HasColumn(x => x.UserCode).Name("UserCode").Length(50).Comment("用户编码").IsUnique().IsNotNull();
+            map.HasColumn(x => x.UserType).Name("UserType").Length(50).Comment("用户类型").IsNotNull();
+            map.IgnoreColumn(x => x.IsAdmin);
+            map.HasColumn(x => x.LoginName).Name("LoginName").Length(50).Comment("登录名").IsUnique().IsNotNull();
+            map.HasColumn(x => x.LoginPwd).Name("LoginPwd").Length(200).Comment("登录密码").IsNotNull();
+
+            map.HasColumn(x => x.Email).Name("Email").Comment("电子邮箱");
+            map.HasColumn(x => x.Mobile).Name("Mobile").Comment("移动电话");
+            map.HasColumn(x => x.Landline).Name("Landline").Comment("座机电话");
+            map.HasColumn(x => x.Avatar).Name("Avatar").DataType(SimpleStandardType.Text).Comment("头像");
+
+            map.HasColumn(x => x.CreateDateTime).Name("CreateDateTime").Comment("创建时间");
+            map.HasColumn(x => x.CreateUserId).Name("CreateUserId").Comment("创建人");
+            map.HasColumn(x => x.CreateUserName).Name("CreateUserName").Comment("创建人");
+            map.HasColumn(x => x.UpdateDateTime).Name("UpdateDateTime").Comment("更新时间");
+            map.HasColumn(x => x.UpdateUserId).Name("UpdateUserId").Comment("更新人");
+            map.HasColumn(x => x.UpdateUserName).Name("UpdateUserName").Comment("更新人");
+        }
+    }
+~~~
+
+
+
+### 事务
+
+~~~ c#
+using (var trans = SqlMapper.BeginTransaction())
+            {
+                try
+                {
+                    trans.Entity<UserRoleRelInfo>().Where(x => x.UserId == dto.User.UserId).Delete();
+                    foreach (var item in dto.Roles)
+                    {
+                        trans.Entity<UserRoleRelInfo>().Insert(new UserRoleRelInfo() { UserId = dto.User.UserId, RoleId = item.RoleId });
+                    }
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+~~~
+
+### 工作单元
+
+整个工作单元会在一个事务执行
+
+~~~ c#
+[UnitOfWork]
+        public virtual IList<StrObjDict> R1()
+        {
+            _evnRepository.R1();
+            _evnRepository.R2();
+            _evnRepository.E1();
+            return _evnRepository.Q1();
+        }
+~~~
+
+### $和#区别
+
+在sql语句中所有参数由##包裹，也可以由$$包裹，##包裹的参数会进行参数化处理，而$$包裹的参数会在sql处理前直接替换拼接字符串处理。
+
+正式环境要求使用##包裹参数，对入参进行参数化处理，防止sql注入！
+
+处理前sql
+
+~~~ sql
+select * from users where userid=#userid#
+~~~
+
+处理后sql
+
+~~~ sql
+select * from users where userid=@userid
+~~~
+
+处理前sql(注意这种方式需要自己带上单引号)
+
+~~~ sql
+select * from users where userid='$userid$'
+~~~
+
+处理后sql
+
+~~~ sql
+select * from users where userid='8F2D7A615AE94579A7CE8058EB091E9E'
+~~~
+

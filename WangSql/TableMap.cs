@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,34 +15,16 @@ namespace WangSql
         /// <summary>
         /// 使用静态变量注意内存溢出
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, TableInfo> Maps = new ConcurrentDictionary<Type, TableInfo>();
-        private static readonly int MapsLength = 50000;
+        private static readonly ConcurrentDictionary<Type, TableInfo> TableInfoCache = new ConcurrentDictionary<Type, TableInfo>();
+        private static readonly int TableInfoCacheSize = 100000;
 
         static TableMap()
         {
             #region 初始化
-            var assemblyTypes = new List<Type>();
-            System.IO.Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory, "*.dll")
-                .Where(
-                    x => !x.StartsWith("Microsoft") &&
-                         !x.StartsWith("System") &&
-                         !x.StartsWith("runtime") &&
-                         !x.StartsWith("Newtonsoft")
-                         )
-                .ToList()
-                .ForEach(item =>
-                {
-                    assemblyTypes.AddRange(
-                        Assembly.LoadFile(item).GetTypes()
-                        .Select(x => x.AssemblyQualifiedName)
-                        .Select(x => Type.GetType(x))
-                        .Where(type => (type.IsClass || type.IsInterface) && !type.IsAbstract)
-                    );
-                });
-            assemblyTypes = assemblyTypes.Where(type => type.IsClass && !type.IsAbstract).ToList();
+            var assemblyTypes = GetAssemblyTypes();
 
             //特性方式
-            var attrClass = assemblyTypes.Where(op => op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
+            var attrClass = assemblyTypes.Where(op => op.IsClass && op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
             foreach (var type in attrClass)
             {
                 var map = GetMap(type);
@@ -49,13 +32,52 @@ namespace WangSql
             }
 
             //接口方式
-            var flutClass = assemblyTypes.Where(x => typeof(IDataConfig).IsAssignableFrom(x)).ToList();
+            var flutClass = assemblyTypes.Where(x => x.IsClass && typeof(IDataConfig).IsAssignableFrom(x)).ToList();
             foreach (var type in flutClass)
             {
                 Activator.CreateInstance(type);
             }
             #endregion
         }
+        private static IList<Type> types = new List<Type>();
+        private static IList<Type> GetAssemblyTypes()
+        {
+            if (types == null || !types.Any())
+            {
+                var assemblyTypes = new List<Type>();
+                var dlls = System.IO.Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory, "*.dll")
+                     .Where(
+                         x =>
+                         {
+                             var f = new FileInfo(x);
+                             return
+                              !f.Name.StartsWith("Microsoft") &&
+                              !f.Name.StartsWith("System") &&
+                              !f.Name.StartsWith("runtime") &&
+                              !f.Name.StartsWith("Newtonsoft") &&
+                              !f.Name.StartsWith("Oracle") &&
+                              !f.Name.StartsWith("Npgsql") &&
+                              !f.Name.StartsWith("MySql")
+                              ;
+                         })
+                     .ToList();
+                dlls
+                .ForEach(item =>
+                {
+                    var ts = Assembly.LoadFile(item)
+                             ?.GetTypes()
+                             ?.Select(x => x.AssemblyQualifiedName).Where(x => !string.IsNullOrEmpty(x))
+                             ?.Select(x => Type.GetType(x)).Where(x => x != null)
+                             ?.Where(type => (type.IsClass && !type.IsAbstract) || type.IsInterface)
+                             ?.ToList();
+                    if (ts != null)
+                        assemblyTypes.AddRange(ts);
+                });
+                types = assemblyTypes;
+            }
+            return types;
+        }
+
 
         public static TableMapTable<T> Entity<T>() where T : class
         {
@@ -82,42 +104,42 @@ namespace WangSql
 
         public static IList<TableInfo> GetMaps()
         {
-            return Maps.Select(x => x.Value).ToList();
+            return TableInfoCache.Select(x => x.Value).ToList();
         }
 
 
         private static TableInfo GetMap(Type type)
         {
             TableInfo result;
-            if (Maps.ContainsKey(type))
+            if (TableInfoCache.ContainsKey(type))
             {
-                result = Maps[type];
+                result = TableInfoCache[type];
             }
             else
             {
                 result = GetTableInfo(type);
-                if (Maps.Count > MapsLength)
+                if (TableInfoCache.Count > TableInfoCacheSize)
                 {
-                    Maps.Clear();
+                    TableInfoCache.Clear();
                 }
-                Maps[type] = result;
+                TableInfoCache[type] = result;
             }
             return result;
         }
 
         private static TableInfo SetMap(Type type, TableInfo value)
         {
-            if (Maps.ContainsKey(type))
+            if (TableInfoCache.ContainsKey(type))
             {
-                Maps[type] = value;
+                TableInfoCache[type] = value;
             }
             else
             {
-                if (Maps.Count > MapsLength)
+                if (TableInfoCache.Count > TableInfoCacheSize)
                 {
-                    Maps.Clear();
+                    TableInfoCache.Clear();
                 }
-                Maps[type] = value;
+                TableInfoCache[type] = value;
             }
 
             return value;
@@ -126,11 +148,11 @@ namespace WangSql
         private static TableInfo ClearMap(Type type)
         {
             TableInfo result = GetTableInfo(type);
-            if (Maps.Count > MapsLength)
+            if (TableInfoCache.Count > TableInfoCacheSize)
             {
-                Maps.Clear();
+                TableInfoCache.Clear();
             }
-            Maps[type] = result;
+            TableInfoCache[type] = result;
             return result;
         }
 
@@ -160,6 +182,8 @@ namespace WangSql
                 var column = (ColumnAttribute)item.GetCustomAttributes(typeof(ColumnAttribute), false).FirstOrDefault();
                 if (column == null)
                 {
+                    //判断下是否属性可读写
+                    if (!item.CanRead || !item.CanWrite) continue;
                     column = new ColumnAttribute
                     {
                         Name = item.Name
@@ -181,15 +205,15 @@ namespace WangSql
                 });
             }
 
-            //如果没有设置主键，则将第一个含有ID的字段当做主键
-            if (!result.Columns.Any(op => op.IsPrimaryKey))
-            {
-                var property = result.Columns.FirstOrDefault(op => op.Name.ToUpper().Contains("ID"));
-                if (property != null)
-                {
-                    property.IsPrimaryKey = true;
-                }
-            }
+            ////如果没有设置主键，则将第一个含有ID的字段当做主键
+            //if (!result.Columns.Any(op => op.IsPrimaryKey))
+            //{
+            //    var property = result.Columns.FirstOrDefault(op => op.Name.ToUpper().Contains("ID"));
+            //    if (property != null)
+            //    {
+            //        property.IsPrimaryKey = true;
+            //    }
+            //}
 
             return result;
         }
@@ -201,7 +225,6 @@ namespace WangSql
         /// <summary>
         ///     清除列相关配置信息
         /// </summary>
-        /// <returns></returns>
         public TableMapTable<T> Clear()
         {
             TableMap.ClearMap<T>();
@@ -209,10 +232,8 @@ namespace WangSql
         }
 
         /// <summary>
-        ///     设置表名
+        ///     设置表
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
         public TableMapTable<T> ToTable(string name = null, string comment = null, bool autoCreate = false)
         {
             if (string.IsNullOrEmpty(name))
@@ -228,11 +249,8 @@ namespace WangSql
         }
 
         /// <summary>
-        ///     设置列名
+        ///     设置列
         /// </summary>
-        /// <param name="expression"></param>
-        /// <param name="columnName"></param>
-        /// <returns></returns>
         public TableMapColumn<T> HasColumn(Expression<Func<T, object>> expression, string name = null)
         {
             var key = GetPropertyName(expression);
@@ -240,10 +258,17 @@ namespace WangSql
         }
 
         /// <summary>
-        ///     设置主键
+        ///     设置主键列
         /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        public TableMapColumn<T> HasPrimaryKey(Expression<Func<T, object>> expression, string name = null)
+        {
+            var key = GetPropertyName(expression);
+            return new TableMapColumn<T>(key).Name(name).IsPrimaryKey();
+        }
+
+        /// <summary>
+        ///     忽略列
+        /// </summary>
         public TableMapTable<T> IgnoreColumn(Expression<Func<T, object>> expression)
         {
             var map = TableMap.GetMap<T>();

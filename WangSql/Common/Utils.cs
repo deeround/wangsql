@@ -5,38 +5,18 @@ using System.Text;
 
 namespace WangSql
 {
-    internal class Utils
+    internal static class Utils
     {
-        internal static string GetHashCode(DbProvider dbProvider)
+        private static MD5 md5 = MD5.Create();
+        internal static string GetHashCode(string str)
         {
-            string codeStr = dbProvider.ConnectionString
-                + dbProvider.ConnectionType
-                + dbProvider.Name
-                + dbProvider.ParameterPrefix
-                + dbProvider.UseParameterPrefixInParameter.ToString()
-                + dbProvider.UseParameterPrefixInSql.ToString()
-                + dbProvider.UseQuotationInSql.ToString();
-
-            byte[] SHA256Data = Encoding.UTF8.GetBytes(codeStr);
-            SHA256Managed Sha256 = new SHA256Managed();
-            byte[] by = Sha256.ComputeHash(SHA256Data);
-            return BitConverter.ToString(by).Replace("-", "").ToLower();
-        }
-        internal static string GetHashCode(DbProvider dbProvider, string sql)
-        {
-            string codeStr = dbProvider.ConnectionString
-                + dbProvider.ConnectionType
-                + dbProvider.Name
-                + dbProvider.ParameterPrefix
-                + dbProvider.UseParameterPrefixInParameter.ToString()
-                + dbProvider.UseParameterPrefixInSql.ToString()
-                + dbProvider.UseQuotationInSql.ToString()
-                + sql;
-
-            byte[] SHA256Data = Encoding.UTF8.GetBytes(codeStr);
-            SHA256Managed Sha256 = new SHA256Managed();
-            byte[] by = Sha256.ComputeHash(SHA256Data);
-            return BitConverter.ToString(by).Replace("-", "").ToLower();
+            StringBuilder sb = new StringBuilder();
+            byte[] source = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(str));
+            for (int i = 0; i < source.Length; i++)
+            {
+                sb.Append(source[i].ToString("x2"));
+            }
+            return sb.ToString();
         }
     }
 }

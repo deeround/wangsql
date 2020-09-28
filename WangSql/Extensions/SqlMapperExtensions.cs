@@ -18,13 +18,13 @@ namespace WangSql
             return new DefaultQuery<T>(sqlExe);
         }
 
-        public static DefaultQuery<T, R> Entity<T, R>(this ISqlExe sqlExe) where T : class where R : class
-        {
-            return new DefaultQuery<T, R>(sqlExe);
-        }
-        public static DefaultQuery<T, R> From<T, R>(this ISqlExe sqlExe) where T : class where R : class
-        {
-            return new DefaultQuery<T, R>(sqlExe);
-        }
+        //public static DefaultQuery<T, R> Entity<T, R>(this ISqlExe sqlExe) where T : class where R : class
+        //{
+        //    return new DefaultQuery<T, R>(sqlExe);
+        //}
+        //public static DefaultQuery<T, R> From<T, R>(this ISqlExe sqlExe) where T : class where R : class
+        //{
+        //    return new DefaultQuery<T, R>(sqlExe);
+        //}
     }
 }

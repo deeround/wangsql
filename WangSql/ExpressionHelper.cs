@@ -193,16 +193,23 @@ namespace WangSql
 
             if (mce.Method.Name == "Contains")
             {
-                if (mce.Object == null)
+                if (mce.Object == null && mce.Arguments.Count > 1)
                 {
                     return string.Format("{0} in ({1})", ExpressionRouter(mce.Arguments[1]), ExpressionRouter(mce.Arguments[0]));
                 }
                 else
                 {
-                    var name = ExpressionRouter(mce.Object);
-                    var value = ExpressionRouter(mce.Arguments[0]);
-                    _dbParamters[_dbParamters.Count - 1].Value = string.Format("%{0}%", _dbParamters[_dbParamters.Count - 1].Value);
-                    return string.Format("{0} like {1}", name, value);
+                    if (mce.Object.Type.Name.StartsWith("List`") || mce.Object.Type.Name.StartsWith("IList`") || mce.Object.Type.Name.StartsWith("IEnumerable`"))
+                    {
+                        return string.Format("{0} in ({1})", ExpressionRouter(mce.Arguments[0]), ExpressionRouter(mce.Object));
+                    }
+                    else
+                    {
+                        var name = ExpressionRouter(mce.Object);
+                        var value = ExpressionRouter(mce.Arguments[0]);
+                        _dbParamters[_dbParamters.Count - 1].Value = string.Format("%{0}%", _dbParamters[_dbParamters.Count - 1].Value);
+                        return string.Format("{0} like {1}", name, value);
+                    }
                 }
             }
             else if (mce.Method.Name == "StartsWith")

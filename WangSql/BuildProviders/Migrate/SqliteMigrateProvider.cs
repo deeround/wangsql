@@ -7,17 +7,49 @@ namespace WangSql.BuildProviders.Migrate
 {
     public class SqliteMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
-        private ISqlMapper _sqlMapper;
-
-        public override void Run(ISqlMapper sqlMapper)
+        public override void AddColumn(string tableName, ColumnInfo columnInfo)
         {
-            _sqlMapper = sqlMapper;
+            ResolveColumnInfo(columnInfo);
+            string defaultValue = columnInfo.DefaultValue == null ? "" : (columnInfo.DefaultValue is string) ? $"'{columnInfo.DefaultValue}'" : $"{columnInfo.DefaultValue}";
+            sqlMapper.Execute($"ALTER TABLE {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(tableName)} ADD COLUMN {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(columnInfo.Name)} {ResolveDataType(columnInfo)} {(columnInfo.IsNotNull ? "not null" : "")} {(string.IsNullOrEmpty(defaultValue) ? "" : $"default {defaultValue}")}", null);
+        }
+
+        public override void CreateTable(TableInfo tableInfo)
+        {
+            var sqls = CreateSql(tableInfo);
+            using (var trans = sqlMapper.BeginTransaction())
+            {
+                try
+                {
+                    foreach (var item in sqls)
+                    {
+                        trans.Execute(item, null);
+                    }
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw new SqlException(ex.Message);
+                }
+            }
+        }
+
+        public override void DropTable(string tableName)
+        {
+            sqlMapper.Execute($"DROP TABLE {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(tableName)}", null);
+        }
+
+
+
+        public override void Run()
+        {
             var tables = TableMap.GetMaps().Where(x => x.AutoCreate).ToList();
             for (int i = 0; i < tables.Count; i++)
             {
                 var table = tables[i];
                 var sqls = CreateSql(table);
-                using (var trans = _sqlMapper.BeginTransaction())
+                using (var trans = this.sqlMapper.BeginTransaction())
                 {
                     try
                     {
@@ -43,12 +75,13 @@ namespace WangSql.BuildProviders.Migrate
             IList<string> result = new List<string>();
             StringBuilder sb = new StringBuilder();
             //表结构
-            sb.AppendLine($"create table if not exists {_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)}(");
+            sb.AppendLine($"create table if not exists {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)}(");
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 var item = table.Columns[i];
                 ResolveColumnInfo(item);
-                string colSql = $"{_sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {ResolveDataType(item)} {(item.IsNotNull ? "not null" : "")}";
+                string defaultValue = item.DefaultValue == null ? "" : (item.DefaultValue is string) ? $"'{item.DefaultValue}'" : $"{item.DefaultValue}";
+                string colSql = $"{sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {ResolveDataType(item)} {(item.IsNotNull ? "not null" : "")}";
                 if (item.IsPrimaryKey)
                 {
                     colSql += " primary key";
@@ -57,6 +90,11 @@ namespace WangSql.BuildProviders.Migrate
                 if (item.IsUnique)
                 {
                     colSql += " unique";
+                }
+
+                if (!string.IsNullOrEmpty(defaultValue))
+                {
+                    colSql += $" default {defaultValue}";
                 }
 
                 if (i < table.Columns.Count - 1)
@@ -129,6 +167,10 @@ namespace WangSql.BuildProviders.Migrate
                     {
                         column.Length = 1;
                         return $"varchar(1)";
+                    }
+                case SimpleStandardType.Binary:
+                    {
+                        return $"blob";
                     }
                 default:
                     {

@@ -202,36 +202,32 @@ namespace WangSql
 
     public class ParamMap
     {
-        //public ParamHandler GetCacheMap(DbProvider dbProvider, string sql)
-        //{
-        //    var handler = new ParamHandler(dbProvider, sql);
-        //    return handler;
-        //}
-
-
-        private static readonly ConcurrentDictionary<string, ParamHandler> CacheMap = new ConcurrentDictionary<string, ParamHandler>();
-        private static readonly int CacheMapLength = 100000;
+        /// <summary>
+        /// 使用静态变量注意内存溢出
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, ParamHandler> ParamHandlerCache = new ConcurrentDictionary<string, ParamHandler>();
+        private static readonly int ParamHandlerCacheSize = 100000;
 
         public ParamHandler GetCacheMap(DbProvider dbProvider, string sql)
         {
-            string code = Utils.GetHashCode(dbProvider, sql);
+            string code = Utils.GetHashCode(dbProvider.ToString() + sql);
 
             //存在
-            if (CacheMap.ContainsKey(code))
+            if (ParamHandlerCache.ContainsKey(code))
             {
-                return CacheMap[code];
+                return ParamHandlerCache[code];
             }
             //不存在
             {
                 //缓存对象大小判断
-                if (CacheMap.Count > CacheMapLength)
+                if (ParamHandlerCache.Count > ParamHandlerCacheSize)
                 {
                     //暂时先全部移除
-                    CacheMap.Clear();
+                    ParamHandlerCache.Clear();
                 }
 
                 var handler = new ParamHandler(dbProvider, sql);
-                CacheMap[code] = handler;
+                ParamHandlerCache[code] = handler;
                 return handler;
             }
         }

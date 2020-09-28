@@ -61,6 +61,10 @@ namespace WangSql
         /// 布尔类型（boolean 有"true"(真)或"false"(假)两个状态， 第三种"unknown"(未知)状态，用 NULL 表示。）
         /// 使用（变长，长度为1的字符类型）存储，"1"为true，"0"为false，null为未知状态
         /// </summary>
-        Boolean
+        Boolean,
+        /// <summary>
+        /// 二进制流（对应c#字节数组）
+        /// </summary>
+        Binary
     }
 }

@@ -20,8 +20,8 @@ namespace WangSql
         /// <summary>
         /// 使用静态变量注意内存溢出
         /// </summary>
-        private static readonly ConcurrentDictionary<string, Type> CacheConnectionType = new ConcurrentDictionary<string, Type>();
-        private static readonly int CacheConnectionTypeLength = 1000;
+        private static readonly ConcurrentDictionary<string, Type> ConnectionTypeCache = new ConcurrentDictionary<string, Type>();
+        private static readonly int ConnectionTypeCacheSize = 100;
 
         public DbProvider(
             string name,
@@ -33,8 +33,27 @@ namespace WangSql
             bool useQuotationInSql,
             bool debug)
         {
+            if (connectionString.Contains(","))
+            {
+                var cs = connectionString.Split(',').Where(x => !string.IsNullOrEmpty(x?.Trim())).ToList();
+                if (cs.Count() > 1)
+                {
+                    ConnectionString = cs[0];
+                    cs.RemoveAt(0);
+                    ConnectionReadString = cs.ToArray();
+                }
+                else if (cs.Count() == 1)
+                {
+                    ConnectionString = cs[0];
+                }
+            }
+            else
+            {
+                ConnectionString = connectionString;
+            }
+
             Name = name;
-            ConnectionString = connectionString;
+            //ConnectionString = connectionString;
             ConnectionType = connectionType;
             UseParameterPrefixInSql = useParameterPrefixInSql;
             UseParameterPrefixInParameter = useParameterPrefixInParameter;
@@ -46,7 +65,13 @@ namespace WangSql
             FormulaProvider = new DefaultFormulaProvider();
         }
 
+        public override string ToString()
+        {
+            return $"{Name}{ConnectionString}{ConnectionType}{UseParameterPrefixInSql}{UseParameterPrefixInParameter}{ParameterPrefix}{UseQuotationInSql}";
+        }
+
         public string ConnectionString { get; }
+        public string[] ConnectionReadString { get; }
         public string ConnectionType { get; }
         public string Name { get; }
         public string ParameterPrefix { get; }
@@ -63,21 +88,39 @@ namespace WangSql
             PageProvider = pageProvider;
         }
 
-        public void SetMigrateProvider(IMigrateProvider migrateProvider)
-        {
-            MigrateProvider = migrateProvider;
-        }
-
         public void SetFormulaProvider(IFormulaProvider formulaProvider)
         {
             FormulaProvider = formulaProvider;
         }
 
-        public IDbConnection CreateConnection()
+        public void SetMigrateProvider(IMigrateProvider migrateProvider)
+        {
+            MigrateProvider = migrateProvider;
+        }
+
+        public IDbConnection CreateConnection(bool isReadDb)
         {
             var type = GetCacheType();
             var conn = (IDbConnection)Activator.CreateInstance(type);
-            conn.ConnectionString = ConnectionString;
+            string connStr = ConnectionString;
+            if (isReadDb)
+            {
+                if (ConnectionReadString == null || ConnectionReadString.Length == 0)
+                {
+                    connStr = ConnectionString;
+                }
+                else if (ConnectionReadString.Length > 1)
+                {
+                    Random random = new Random();
+                    var dbIndex = random.Next(ConnectionReadString.Length);
+                    connStr = ConnectionReadString[dbIndex];
+                }
+                else if (ConnectionReadString.Length == 1)
+                {
+                    connStr = ConnectionReadString[0];
+                }
+            }
+            conn.ConnectionString = connStr;
             return conn;
         }
 
@@ -98,10 +141,10 @@ namespace WangSql
 
         private Type GetCacheType()
         {
-            var code = Utils.GetHashCode(this);
-            if (CacheConnectionType.ContainsKey(code))
+            var code = Utils.GetHashCode(this.ToString());
+            if (ConnectionTypeCache.ContainsKey(code))
             {
-                return CacheConnectionType[code];
+                return ConnectionTypeCache[code];
             }
 
             Type type;
@@ -114,11 +157,11 @@ namespace WangSql
                 throw new SqlException(ConnectionType + "加载失败：" + ex.Message);
             }
 
-            if (CacheConnectionType.Count > CacheConnectionTypeLength)
+            if (ConnectionTypeCache.Count > ConnectionTypeCacheSize)
             {
-                CacheConnectionType.Clear();
+                ConnectionTypeCache.Clear();
             }
-            CacheConnectionType[code] = type ?? throw new SqlException(ConnectionType + "加载失败");
+            ConnectionTypeCache[code] = type ?? throw new SqlException(ConnectionType + "加载失败");
             return type;
         }
     }
@@ -128,10 +171,10 @@ namespace WangSql
         //默认实例
         private static DbProvider _dbProvider;
         private static readonly object _obj_lock = new object();
-        //直接实例化的集合
-        private static readonly ConcurrentDictionary<string, DbProvider> DbProviderNewCache = new ConcurrentDictionary<string, DbProvider>();
-        private static readonly int DbProviderNewCacheSize = 100;
-        //通过配置文件生成的集合
+
+        /// <summary>
+        /// 使用静态变量注意内存溢出
+        /// </summary>
         private static readonly ConcurrentDictionary<string, DbProvider> DbProviderConfigCache = new ConcurrentDictionary<string, DbProvider>();
         private static readonly int DbProviderConfigCacheSize = 100;
 
@@ -150,9 +193,9 @@ namespace WangSql
         public static void Set(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql, bool debug)
         {
             var dbProvider = new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug);
-            if (DbProviderNewCache.Count > DbProviderNewCacheSize)
+            if (DbProviderConfigCache.Count > DbProviderConfigCacheSize)
             {
-                DbProviderNewCache.Clear();
+                DbProviderConfigCache.Clear();
             }
             if (_dbProvider == null)
             {
@@ -166,7 +209,7 @@ namespace WangSql
                 }
             }
             SetBuildProvider(dbProvider);
-            DbProviderNewCache[name] = dbProvider;
+            DbProviderConfigCache[name] = dbProvider;
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序
@@ -215,10 +258,6 @@ namespace WangSql
             if (string.IsNullOrEmpty(name))
             {
                 return _dbProvider;
-            }
-            if (DbProviderNewCache.ContainsKey(name))
-            {
-                return DbProviderNewCache[name];
             }
             if (DbProviderConfigCache.ContainsKey(name))
             {

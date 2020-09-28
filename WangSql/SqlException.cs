@@ -2,7 +2,6 @@
 
 namespace WangSql
 {
-    [Serializable]
     public class SqlException : Exception
     {
         public SqlException()

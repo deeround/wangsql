@@ -7,12 +7,12 @@ namespace WangSql.BuildProviders.Page
 {
     public class PgsqlPageProvider : DefaultPageProvider, IPageProvider
     {
-        public override int BuildPageCountSql<T>(ISqlExe sqlMapper, string sql, object param)
+        public override int BuildPageCountSql<T>(string sql, object param)
         {
             sql = $"SELECT COUNT(*) FROM ({sql}) llll";
             return sqlMapper.Scalar<int>(sql, param);
         }
-        public override IEnumerable<T> BuildPageSql<T>(ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize)
+        public override IEnumerable<T> BuildPageSql<T>(string sql, object param, int pageIndex, int pageSize)
         {
             if (pageIndex == 1)
             {

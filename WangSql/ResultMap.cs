@@ -73,7 +73,8 @@ namespace WangSql
             {
                 var k = reader.GetName(i);
                 var v = GetReaderValue(reader, i);
-                dict.Add(k, v);
+                if (!dict.Contains(k))
+                    dict.Add(k, v);
             }
 
             var t = (T)dict;

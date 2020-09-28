@@ -22,8 +22,8 @@ namespace WangSql
         {
             #region Type2StandardTypeMap
             Type2StandardTypeMap[typeof(string)] = StandardType.Simple;
-            Type2StandardTypeMap[typeof(char)] = StandardType.Simple;
 
+            Type2StandardTypeMap[typeof(char)] = StandardType.Simple;
             Type2StandardTypeMap[typeof(byte)] = StandardType.Simple;
             Type2StandardTypeMap[typeof(sbyte)] = StandardType.Simple;
             Type2StandardTypeMap[typeof(short)] = StandardType.Simple;
@@ -41,7 +41,6 @@ namespace WangSql
             Type2StandardTypeMap[typeof(DateTimeOffset)] = StandardType.Simple;
 
             Type2StandardTypeMap[typeof(char?)] = StandardType.Simple;
-
             Type2StandardTypeMap[typeof(byte?)] = StandardType.Simple;
             Type2StandardTypeMap[typeof(sbyte?)] = StandardType.Simple;
             Type2StandardTypeMap[typeof(short?)] = StandardType.Simple;
@@ -60,12 +59,14 @@ namespace WangSql
 
             Type2StandardTypeMap[typeof(Dictionary<string, object>)] = StandardType.Dictionary;
             Type2StandardTypeMap[typeof(IDictionary<string, object>)] = StandardType.Dictionary;
+
+            Type2StandardTypeMap[typeof(byte[])] = StandardType.Simple;
             #endregion
 
             #region Type2SimpleStandardTypeMap
             Type2SimpleStandardTypeMap[typeof(string)] = SimpleStandardType.Varchar;
-            Type2SimpleStandardTypeMap[typeof(char)] = SimpleStandardType.Char;
 
+            Type2SimpleStandardTypeMap[typeof(char)] = SimpleStandardType.Char;
             Type2SimpleStandardTypeMap[typeof(byte)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(sbyte)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(short)] = SimpleStandardType.Numeric;
@@ -77,17 +78,11 @@ namespace WangSql
             Type2SimpleStandardTypeMap[typeof(float)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(double)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(decimal)] = SimpleStandardType.Numeric;
-
             Type2SimpleStandardTypeMap[typeof(bool)] = SimpleStandardType.Boolean;
-
             Type2SimpleStandardTypeMap[typeof(DateTime)] = SimpleStandardType.DateTime;
-
             Type2SimpleStandardTypeMap[typeof(DateTimeOffset)] = SimpleStandardType.DateTimeOffset;
 
-            #region MyRegion
-            Type2SimpleStandardTypeMap[typeof(string)] = SimpleStandardType.Varchar;
             Type2SimpleStandardTypeMap[typeof(char?)] = SimpleStandardType.Char;
-
             Type2SimpleStandardTypeMap[typeof(byte?)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(sbyte?)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(short?)] = SimpleStandardType.Numeric;
@@ -99,28 +94,17 @@ namespace WangSql
             Type2SimpleStandardTypeMap[typeof(float?)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(double?)] = SimpleStandardType.Numeric;
             Type2SimpleStandardTypeMap[typeof(decimal?)] = SimpleStandardType.Numeric;
-
             Type2SimpleStandardTypeMap[typeof(bool?)] = SimpleStandardType.Boolean;
-
             Type2SimpleStandardTypeMap[typeof(DateTime?)] = SimpleStandardType.DateTime;
-
             Type2SimpleStandardTypeMap[typeof(DateTimeOffset?)] = SimpleStandardType.DateTimeOffset;
-            #endregion
+
+            Type2SimpleStandardTypeMap[typeof(byte[])] = SimpleStandardType.Binary;
             #endregion
         }
 
         public static StandardType GetStandardType(object obj)
         {
-            Type type;
-            if (obj is Type)
-            {
-                type = (Type)obj;
-            }
-            else
-            {
-                type = obj.GetType();
-            }
-
+            Type type = obj is Type type1 ? type1 : obj.GetType();
             if (Type2StandardTypeMap.ContainsKey(type))
                 return Type2StandardTypeMap[type];
             if (typeof(IDictionary).IsAssignableFrom(type))
@@ -135,16 +119,7 @@ namespace WangSql
 
         public static SimpleStandardType GetSimpleStandardType(object obj)
         {
-            Type type;
-            if (obj is Type)
-            {
-                type = (Type)obj;
-            }
-            else
-            {
-                type = obj.GetType();
-            }
-
+            Type type = obj is Type type1 ? type1 : obj.GetType();
             if (Type2SimpleStandardTypeMap.ContainsKey(type))
                 return Type2SimpleStandardTypeMap[type];
             if (type.IsEnum)
@@ -237,6 +212,11 @@ namespace WangSql
                             else result = false;
                         }
                         break;
+                    case SimpleStandardType.Binary:
+                        {
+                            result = (byte[])obj;
+                        }
+                        break;
                 }
             }
             catch
@@ -266,7 +246,8 @@ namespace WangSql
                 type == typeof(bool) ||
                 type == typeof(char) ||
                 type == typeof(DateTime) ||
-                type == typeof(DateTimeOffset)
+                type == typeof(DateTimeOffset) ||
+                type == typeof(byte[])
                 )
             {
                 return type;
@@ -339,6 +320,8 @@ namespace WangSql
                         else if ((bool)obj) obj = "1";
                         else obj = "0";
                     }
+                    break;
+                case SimpleStandardType.Binary:
                     break;
             }
             return obj;
