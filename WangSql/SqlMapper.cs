@@ -130,13 +130,6 @@ namespace WangSql
         void Rollback();
     }
 
-    public interface ISqlMapperManual : ISqlExe
-    {
-        void OpenConn();
-        void CloseConn();
-        ISqlTrans BeginTransaction();
-    }
-
     public class SqlFactory
     {
         private readonly string _name;
@@ -197,14 +190,13 @@ namespace WangSql
 
 
     /// <summary>
-    /// 自动管理数据库连接
+    /// 自动管理数据库连接,单例模式下使用工作单元需要考虑并发和多线程
     /// </summary>
     public class SqlMapper : ISqlMapper
     {
         private IDbConnection _conn;
         private IDbTransaction _trans;
         private bool _isUnitWork;
-        private bool _disposed;
 
         private IDbConnection CreateConnection(bool isReadDb)
         {
@@ -217,8 +209,18 @@ namespace WangSql
         }
         private void CloseConnection(IDbConnection conn)
         {
-            if (conn.State != ConnectionState.Closed)
-                conn.Close();
+            if (conn != null)
+            {
+                try
+                {
+                    if (conn.State != ConnectionState.Closed)
+                        conn.Close();
+                }
+                catch
+                {
+                }
+                conn.Dispose();
+            }
         }
 
         public SqlMapper()
@@ -266,7 +268,7 @@ namespace WangSql
             {
                 if (!_isUnitWork)
                 {
-                    Dispose();
+                    CloseConnection(conn);
                 }
             }
         }
@@ -318,7 +320,7 @@ namespace WangSql
             {
                 if (!_isUnitWork)
                 {
-                    Dispose();
+                    CloseConnection(conn);
                 }
             }
         }
@@ -362,7 +364,7 @@ namespace WangSql
             {
                 if (!_isUnitWork)
                 {
-                    Dispose();
+                    CloseConnection(conn);
                 }
             }
         }
@@ -396,7 +398,7 @@ namespace WangSql
             {
                 if (!_isUnitWork)
                 {
-                    Dispose();
+                    CloseConnection(conn);
                 }
             }
             return dt;
@@ -404,10 +406,10 @@ namespace WangSql
 
         public void BeginUnitWork()
         {
+            _isUnitWork = true;
             _conn = SqlFactory.CreateConnection(false);
             _conn.Open();
             _trans = _conn.BeginTransaction();
-            _isUnitWork = true;
         }
 
         public void CommitUnitWork()
@@ -416,7 +418,9 @@ namespace WangSql
             {
                 _isUnitWork = false;
                 _trans.Commit();
-                Dispose();
+                _trans.Dispose();
+
+                CloseConnection(_conn);
             }
         }
 
@@ -426,25 +430,9 @@ namespace WangSql
             {
                 _isUnitWork = false;
                 _trans.Rollback();
-                Dispose();
-            }
-        }
+                _trans.Dispose();
 
-        private void Dispose()
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-                if (_trans != null)
-                {
-                    _trans.Dispose();
-                }
-                if (_conn != null)
-                {
-                    if (_conn.State != ConnectionState.Closed)
-                        _conn.Close();
-                    _conn.Dispose();
-                }
+                CloseConnection(_conn);
             }
         }
     }
@@ -456,7 +444,6 @@ namespace WangSql
     {
         private readonly IDbConnection _conn;
         private readonly IDbTransaction _trans;
-        private bool _disposed;
 
         public SqlTrans(SqlFactory sqlFactory)
         {
@@ -478,19 +465,21 @@ namespace WangSql
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (_trans != null)
             {
-                _disposed = true;
-                if (_trans != null)
-                {
-                    _trans.Dispose();
-                }
-                if (_conn != null)
+                _trans.Dispose();
+            }
+            if (_conn != null)
+            {
+                try
                 {
                     if (_conn.State != ConnectionState.Closed)
                         _conn.Close();
-                    _conn.Dispose();
                 }
+                catch
+                {
+                }
+                _conn.Dispose();
             }
         }
 
