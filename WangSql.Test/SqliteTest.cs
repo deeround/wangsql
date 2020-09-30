@@ -11,7 +11,6 @@ namespace WangSql.Test
         {
             //DbProviderManager.Set(
             //        "SQLite",
-            //        "Default",
             //        "Data Source=mario.db;",
             //        "System.Data.SQLite.SQLiteConnection,System.Data.SQLite",
             //        true,

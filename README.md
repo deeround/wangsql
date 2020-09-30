@@ -1,5 +1,11 @@
 # 快速入门
 
+### 介绍
+
+一个简单、通用数据库操作工具类库。
+
+支持NET Standard 2.0和NET Framework 4.0。
+
 ### 配置文件
 
  appsettings.json
@@ -9,7 +15,6 @@
   "Database": [
     {
       "Name": "SQLite",
-      "Enabled": true,
       "ConnectionString": "Data Source=wangsql.db;",
       "ConnectionType": "System.Data.SQLite.SQLiteConnection,System.Data.SQLite",
       "UseParameterPrefixInSql": true,
@@ -31,7 +36,6 @@ app.config
 <database>
   <dbProvider>
     <name>SQLite</name>
-    <enabled>true</enabled>
     <connectionString>Data Source=wangsql.db;</connectionString>
     <connectionType>System.Data.SQLite.SQLiteConnection,System.Data.SQLite</connectionType>
     <useParameterPrefixInSql>true</useParameterPrefixInSql>
@@ -291,17 +295,6 @@ using (var trans = SqlMapper.BeginTransaction())
 ### 工作单元
 
 整个工作单元会在一个事务执行
-
-~~~ c#
-[UnitOfWork]
-        public virtual IList<StrObjDict> R1()
-        {
-            _evnRepository.R1();
-            _evnRepository.R2();
-            _evnRepository.E1();
-            return _evnRepository.Q1();
-        }
-~~~
 
 ### $和#区别
 
