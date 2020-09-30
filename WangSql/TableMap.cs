@@ -45,35 +45,42 @@ namespace WangSql
             if (types == null || !types.Any())
             {
                 var assemblyTypes = new List<Type>();
-                var dlls = System.IO.Directory.GetFiles(System.AppDomain.CurrentDomain.BaseDirectory, "*.dll")
-                     .Where(
-                         x =>
-                         {
-                             var f = new FileInfo(x);
-                             return
-                              !f.Name.StartsWith("Microsoft") &&
-                              !f.Name.StartsWith("System") &&
-                              !f.Name.StartsWith("runtime") &&
-                              !f.Name.StartsWith("Newtonsoft") &&
-                              !f.Name.StartsWith("Oracle") &&
-                              !f.Name.StartsWith("Npgsql") &&
-                              !f.Name.StartsWith("MySql")
-                              ;
-                         })
-                     .ToList();
-                dlls
-                .ForEach(item =>
+                try
                 {
-                    var ts = Assembly.LoadFile(item)
-                             ?.GetTypes()
-                             ?.Select(x => x.AssemblyQualifiedName).Where(x => !string.IsNullOrEmpty(x))
-                             ?.Select(x => Type.GetType(x)).Where(x => x != null)
-                             ?.Where(type => (type.IsClass && !type.IsAbstract) || type.IsInterface)
-                             ?.ToList();
-                    if (ts != null)
-                        assemblyTypes.AddRange(ts);
-                });
-                types = assemblyTypes;
+                    var aaa = AppDomain.CurrentDomain.GetAssemblies().ToList();
+                    aaa
+                        .Where(x =>
+                        {
+                            var name = x.GetName().Name;
+                            return
+                            !name.StartsWith("Microsoft") &&
+                            !name.StartsWith("System") &&
+                            !name.StartsWith("runtime") &&
+                            !name.StartsWith("Newtonsoft") &&
+                            !name.StartsWith("Oracle") &&
+                            !name.StartsWith("Npgsql") &&
+                            !name.StartsWith("MySql")
+                            ;
+                        })
+                        .ToList()
+                    .ForEach(item =>
+                    {
+                        try
+                        {
+                            var ts = item
+                                     ?.GetTypes()
+                                     ?.Select(x => x.AssemblyQualifiedName).Where(x => !string.IsNullOrEmpty(x))
+                                     ?.Select(x => Type.GetType(x)).Where(x => x != null)
+                                     ?.Where(type => (type.IsClass && !type.IsAbstract) || type.IsInterface)
+                                     ?.ToList();
+                            if (ts != null)
+                                assemblyTypes.AddRange(ts);
+                        }
+                        catch { }
+                    });
+                    types = assemblyTypes;
+                }
+                catch (Exception ex) { throw new SqlException("动态初始化程序集异常：" + ex.Message); }
             }
             return types;
         }

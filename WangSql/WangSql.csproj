@@ -7,6 +7,8 @@
     <PackageProjectUrl>https://github.com/deeround/WangSql</PackageProjectUrl>
     <RepositoryUrl>https://github.com/deeround/WangSql</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Authors>deeround</Authors>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>
