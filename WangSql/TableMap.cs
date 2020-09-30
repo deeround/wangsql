@@ -21,7 +21,7 @@ namespace WangSql
         static TableMap()
         {
             #region 初始化
-            var assemblyTypes = GetAssemblyTypes();
+            var assemblyTypes = AssemblyHelper.GetAssemblyTypes();
 
             //特性方式
             var attrClass = assemblyTypes.Where(op => op.IsClass && op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
@@ -39,52 +39,6 @@ namespace WangSql
             }
             #endregion
         }
-        private static IList<Type> types = new List<Type>();
-        private static IList<Type> GetAssemblyTypes()
-        {
-            if (types == null || !types.Any())
-            {
-                var assemblyTypes = new List<Type>();
-                try
-                {
-                    var aaa = AppDomain.CurrentDomain.GetAssemblies().ToList();
-                    aaa
-                        .Where(x =>
-                        {
-                            var name = x.GetName().Name;
-                            return
-                            !name.StartsWith("Microsoft") &&
-                            !name.StartsWith("System") &&
-                            !name.StartsWith("runtime") &&
-                            !name.StartsWith("Newtonsoft") &&
-                            !name.StartsWith("Oracle") &&
-                            !name.StartsWith("Npgsql") &&
-                            !name.StartsWith("MySql")
-                            ;
-                        })
-                        .ToList()
-                    .ForEach(item =>
-                    {
-                        try
-                        {
-                            var ts = item
-                                     ?.GetTypes()
-                                     ?.Select(x => x.AssemblyQualifiedName).Where(x => !string.IsNullOrEmpty(x))
-                                     ?.Select(x => Type.GetType(x)).Where(x => x != null)
-                                     ?.Where(type => (type.IsClass && !type.IsAbstract) || type.IsInterface)
-                                     ?.ToList();
-                            if (ts != null)
-                                assemblyTypes.AddRange(ts);
-                        }
-                        catch { }
-                    });
-                    types = assemblyTypes;
-                }
-                catch (Exception ex) { throw new SqlException("动态初始化程序集异常：" + ex.Message); }
-            }
-            return types;
-        }
-
 
         public static TableMapTable<T> Entity<T>() where T : class
         {
