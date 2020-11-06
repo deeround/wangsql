@@ -12,6 +12,7 @@ namespace WangSql.Test
                     "Oracle",
                     "Data Source=(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.4.182)(PORT = 1521))(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = elaneweb)));User ID=elaneweb;Password=elaneweb;",
                     "Oracle.ManagedDataAccess.Client.OracleConnection,Oracle.ManagedDataAccess",
+                    "Oracle.ManagedDataAccess.Client.OracleDataAdapter,Oracle.ManagedDataAccess",
                     true,
                     true,
                     ":",

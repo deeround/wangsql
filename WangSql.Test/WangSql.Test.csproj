@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WangSql\WangSql.csproj" />
+    <ProjectReference Include="..\..\..\..\Work\vstf\Elane.BT\Elane.GRBT\Service\src\ElaneBoot\WangSql\WangSql.csproj" />
   </ItemGroup>
 
   <ItemGroup>

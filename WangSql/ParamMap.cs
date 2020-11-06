@@ -29,11 +29,13 @@ namespace WangSql
                     var v2 = item.Groups[1].Value;
                     var v3 = v1.StartsWith("#") ? "#" : "$";
 
-                    if (!_paramKeys.Any(op => op.FullName.Equals(v1)))
-                    {
-                        ParamKey k = new ParamKey(v1, v2, v3);
-                        _paramKeys.Add(k);
-                    }
+                    //if (!_paramKeys.Any(op => op.FullName.Equals(v1)))
+                    //{
+                    //    ParamKey k = new ParamKey(v1, v2, v3);
+                    //    _paramKeys.Add(k);
+                    //}
+                    ParamKey k = new ParamKey(v1, v2, v3);
+                    _paramKeys.Add(k);
                 }
             }
         }
@@ -139,18 +141,22 @@ namespace WangSql
         {
             PrepareParameters = new List<IDbDataParameter>();
             if (param == null || param.Count == 0) return;
+            int pi = 1;
             foreach (var item in _paramKeys)
             {
                 if (!DictionaryContainsKey(param, item.Name)) throw new SqlException($"参数{item.Name}未绑定值");
 
                 if (item.Type == "#")
                 {
-                    PrepareSql = PrepareSql.Replace(item.FullName, _dbProvider.FormatNameForSql(item.Name));
+                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
+                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
 
                     var p = cmd.CreateParameter();
-                    p.ParameterName = _dbProvider.FormatNameForParameter(item.Name);
+                    p.ParameterName = parameterName;
                     p.Value = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
                     PrepareParameters.Add(p);
+
                 }
                 else
                 {
@@ -165,14 +171,17 @@ namespace WangSql
         {
             PrepareParameters = new List<IDbDataParameter>();
             if (param == null) return;
+            int pi = 1;
             foreach (var item in _paramKeys)
             {
                 if (item.Type == "#")
                 {
-                    PrepareSql = PrepareSql.Replace(item.FullName, _dbProvider.FormatNameForSql(item.Name));
+                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
+                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
 
                     var p = cmd.CreateParameter();
-                    p.ParameterName = _dbProvider.FormatNameForParameter(item.Name);
+                    p.ParameterName = parameterName;
                     p.Value = TypeMap.ResolveParamValue(param);
                     PrepareParameters.Add(p);
                 }

@@ -12,6 +12,7 @@ namespace WangSql.Test
                     "Pgsql",
                     "User ID=postgres;Password=123456;Host=192.168.4.194;Port=5432;Database=test;",
                     "Npgsql.NpgsqlConnection,Npgsql",
+                    "Npgsql.NpgsqlDataAdapter,Npgsql",
                     true,
                     true,
                     ":",
