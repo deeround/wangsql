@@ -35,7 +35,7 @@ namespace WangSql.Test
             }
 
             //创建表
-            _sqlMapper.Migrate.Run();
+            _sqlMapper.Migrate().Run();
 
             //删除数据
             _sqlMapper.Entity<Models.UserInfo>().Delete();

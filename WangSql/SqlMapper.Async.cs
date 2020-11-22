@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using WangSql.BuildProviders.Formula;
 using WangSql.BuildProviders.Migrate;
 
@@ -14,59 +15,20 @@ namespace WangSql
     /// </summary>
     public partial class SqlMapper : ISqlMapper
     {
-        private DbConnection CreateConnection(bool isReadDb)
-        {
-            return SqlFactory.CreateConnection(isReadDb);
-        }
-        private void OpenConnection(DbConnection conn)
+        private async Task OpenConnectionAsync(DbConnection conn)
         {
             if (conn.State == ConnectionState.Closed)
-                conn.Open();
-        }
-        private void CloseConnection(DbConnection conn)
-        {
-            if (conn != null)
-            {
-                try
-                {
-                    if (conn.State != ConnectionState.Closed)
-                        conn.Close();
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
+                await conn.OpenAsync();
         }
 
-        public SqlMapper()
-        {
-            SqlFactory = new SqlFactory();
-        }
-
-        public SqlMapper(string name)
-        {
-            SqlFactory = new SqlFactory(name);
-        }
-
-        public SqlFactory SqlFactory { get; }
-
-        public ISqlTrans BeginTransaction()
-        {
-            return new SqlTrans(SqlFactory);
-        }
-
-        public int Execute(string sql, object param)
+        public async Task<int> ExecuteAsync(string sql, object param)
         {
             var conn = CreateConnection(false);
             try
             {
                 var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
-                OpenConnection(conn);
-                return cmd.ExecuteNonQuery();
+                await OpenConnectionAsync(conn);
+                return await cmd.ExecuteNonQueryAsync();
             }
             finally
             {
@@ -74,7 +36,7 @@ namespace WangSql
             }
         }
 
-        public T QueryFirstOrDefault<T>(string sql, object param)
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param)
         {
             var conn = CreateConnection(true);
             try
@@ -82,16 +44,16 @@ namespace WangSql
                 var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
                 using (cmd)
                 {
-                    OpenConnection(conn);
-                    using (var reader = cmd.ExecuteReader())
+                    await OpenConnectionAsync(conn);
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         T result = default(T);
-                        if (reader.Read())
+                        if (await reader.ReadAsync().ConfigureAwait(false))
                         {
                             var next = SqlFactory.ResultMap.Deserializer<T>(reader);
                             result = (T)next;
                         }
-                        while (reader.NextResult()) { }
+                        while (await reader.NextResultAsync().ConfigureAwait(false)) { }
                         return result;
                     }
                 }
@@ -102,7 +64,7 @@ namespace WangSql
             }
         }
 
-        public IEnumerable<T> Query<T>(string sql, object param)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param)
         {
             var conn = CreateConnection(true);
             try
@@ -110,11 +72,11 @@ namespace WangSql
                 var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
                 using (cmd)
                 {
-                    OpenConnection(conn);
-                    using (var reader = cmd.ExecuteReader())
+                    await OpenConnectionAsync(conn);
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         IList<T> list = new List<T>();
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
                             var next = SqlFactory.ResultMap.Deserializer<T>(reader);
                             list.Add((T)next);
@@ -129,7 +91,7 @@ namespace WangSql
             }
         }
 
-        public T Scalar<T>(string sql, object param)
+        public async Task<T> ScalarAsync<T>(string sql, object param)
         {
             var conn = CreateConnection(true);
             try
@@ -137,8 +99,8 @@ namespace WangSql
                 var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
                 using (cmd)
                 {
-                    OpenConnection(conn);
-                    var obj = cmd.ExecuteScalar();
+                    await OpenConnectionAsync(conn);
+                    var obj = await cmd.ExecuteScalarAsync();
                     var obj1 = TypeMap.ConvertToType(obj, typeof(T));
                     return obj1 == null ? default(T) : (T)obj1;
                 }
@@ -149,7 +111,7 @@ namespace WangSql
             }
         }
 
-        public DataTable QueryTable(string sql, object param, string tableName = "p_Out")
+        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out")
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;
@@ -159,8 +121,8 @@ namespace WangSql
                 var cmd = SqlFactory.CreateCommand(conn, sql, param, CommandType.Text);
                 using (cmd)
                 {
-                    OpenConnection(conn);
-                    using (var dr = cmd.ExecuteReader())
+                    await OpenConnectionAsync(conn);
+                    using (var dr = await cmd.ExecuteReaderAsync())
                     {
                         dt.Load(dr);
                     }
@@ -179,87 +141,45 @@ namespace WangSql
     /// </summary>
     public partial class SqlTrans : ISqlTrans
     {
-        private readonly DbConnection _conn;
-        private readonly DbTransaction _trans;
-
-        public SqlTrans(SqlFactory sqlFactory)
-        {
-            SqlFactory = sqlFactory;
-            _conn = SqlFactory.CreateConnection(false);
-            _conn.Open();
-            _trans = _conn.BeginTransaction();
-        }
-
-        public SqlFactory SqlFactory { get; }
-
-        public void Commit()
-        {
-            _trans.Commit();
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            if (_trans != null)
-            {
-                _trans.Dispose();
-            }
-            if (_conn != null)
-            {
-                try
-                {
-                    if (_conn.State != ConnectionState.Closed)
-                        _conn.Close();
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    _conn.Dispose();
-                }
-            }
-        }
-
-        public int Execute(string sql, object param)
+        public async Task<int> ExecuteAsync(string sql, object param)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
             using (cmd)
             {
-                return cmd.ExecuteNonQuery();
+                return await cmd.ExecuteNonQueryAsync();
             }
         }
 
-        public T QueryFirstOrDefault<T>(string sql, object param)
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             using (cmd)
             {
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     T result = default(T);
-                    if (reader.Read())
+                    if (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         var next = SqlFactory.ResultMap.Deserializer<T>(reader);
                         result = (T)next;
                     }
-                    while (reader.NextResult()) { }
+                    while (await reader.NextResultAsync().ConfigureAwait(false)) { }
                     return result;
                 }
             }
         }
 
-        public IEnumerable<T> Query<T>(string sql, object param)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
             using (cmd)
             {
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     IList<T> list = new List<T>();
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         var next = SqlFactory.ResultMap.Deserializer<T>(reader);
                         list.Add((T)next);
@@ -269,25 +189,19 @@ namespace WangSql
             }
         }
 
-        public void Rollback()
-        {
-            _trans.Rollback();
-            Dispose();
-        }
-
-        public T Scalar<T>(string sql, object param)
+        public async Task<T> ScalarAsync<T>(string sql, object param)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
             using (cmd)
             {
-                var obj = cmd.ExecuteScalar();
+                var obj = await cmd.ExecuteScalarAsync();
                 var obj1 = TypeMap.ConvertToType(obj, typeof(T));
                 return obj1 == null ? default(T) : (T)obj1;
             }
         }
 
-        public DataTable QueryTable(string sql, object param, string tableName = "p_Out")
+        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out")
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;
@@ -295,7 +209,7 @@ namespace WangSql
             cmd.Transaction = _trans;
             using (cmd)
             {
-                using (var dr = cmd.ExecuteReader())
+                using (var dr = await cmd.ExecuteReaderAsync())
                 {
                     dt.Load(dr);
                 }
@@ -303,5 +217,4 @@ namespace WangSql
             return dt;
         }
     }
-
 }

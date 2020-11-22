@@ -10,6 +10,8 @@ namespace WangSql
     [AttributeUsage(AttributeTargets.Property)]
     public class IgnoreColumnAttribute : Attribute
     {
-
+        public IgnoreColumnAttribute()
+        {
+        }
     }
 }

@@ -12,12 +12,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Work\vstf\Elane.BT\Elane.GRBT\Service\src\ElaneBoot\WangSql\WangSql.csproj" />
+    <ProjectReference Include="..\WangSql\WangSql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="app.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

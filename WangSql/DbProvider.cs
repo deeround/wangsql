@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using WangSql.BuildProviders.Formula;
 using WangSql.BuildProviders.Migrate;
-using WangSql.BuildProviders.Page;
+using WangSql.BuildProviders.Paged;
 
 namespace WangSql
 {
@@ -60,9 +61,6 @@ namespace WangSql
             ParameterPrefix = parameterPrefix;
             UseQuotationInSql = useQuotationInSql;
             Debug = debug;
-            PageProvider = new DefaultPageProvider();
-            MigrateProvider = new DefaultMigrateProvider();
-            FormulaProvider = new DefaultFormulaProvider();
         }
 
         public override string ToString()
@@ -83,25 +81,10 @@ namespace WangSql
         public IMigrateProvider MigrateProvider { get; private set; }
         public IFormulaProvider FormulaProvider { get; private set; }
 
-        public void SetPageProvider(IPageProvider pageProvider)
-        {
-            PageProvider = pageProvider;
-        }
-
-        public void SetFormulaProvider(IFormulaProvider formulaProvider)
-        {
-            FormulaProvider = formulaProvider;
-        }
-
-        public void SetMigrateProvider(IMigrateProvider migrateProvider)
-        {
-            MigrateProvider = migrateProvider;
-        }
-
-        public IDbConnection CreateConnection(bool isReadDb)
+        public DbConnection CreateConnection(bool isReadDb)
         {
             var type = GetCacheType();
-            var conn = (IDbConnection)Activator.CreateInstance(type);
+            var conn = (DbConnection)Activator.CreateInstance(type);
             string connStr = ConnectionString;
             if (isReadDb)
             {
@@ -138,6 +121,25 @@ namespace WangSql
         {
             return UseQuotationInSql ? "\"" + parameterName + "\"" : parameterName;
         }
+
+
+        public void SetPageProvider(IPageProvider pageProvider)
+        {
+            PageProvider = pageProvider;
+        }
+
+        public void SetFormulaProvider(IFormulaProvider formulaProvider)
+        {
+            FormulaProvider = formulaProvider;
+        }
+
+        public void SetMigrateProvider(IMigrateProvider migrateProvider)
+        {
+            MigrateProvider = migrateProvider;
+        }
+
+
+
 
         private Type GetCacheType()
         {
@@ -197,18 +199,17 @@ namespace WangSql
             {
                 DbProviderConfigCache.Clear();
             }
+            SetBuildProvider(dbProvider);
             if (_dbProvider == null)
             {
                 lock (_obj_lock)
                 {
                     if (_dbProvider == null)
                     {
-                        SetBuildProvider(dbProvider);
                         _dbProvider = dbProvider;
                     }
                 }
             }
-            SetBuildProvider(dbProvider);
             DbProviderConfigCache[name] = dbProvider;
         }
         /// <summary>
@@ -275,6 +276,15 @@ namespace WangSql
         }
 
 
+
+
+
+
+
+
+
+
+
         private static void SetBuildProvider(DbProvider dbProvider)
         {
             var type = dbProvider.ConnectionType?.ToLower();
@@ -297,6 +307,7 @@ namespace WangSql
                 dbProvider.SetFormulaProvider(new SqliteFormulaProvider());
             }
         }
+
 
         private static IList<DbProvider> GetConfigFile(string config)
         {
@@ -373,7 +384,6 @@ namespace WangSql
             foreach (XmlNode item in providers)
             {
                 string name = item.SelectSingleNode("name")?.InnerText;
-                bool enabled = StringToBool(item.SelectSingleNode("enabled")?.InnerText);
                 string connectionString = item.SelectSingleNode("connectionString")?.InnerText;
                 string connectionType = item.SelectSingleNode("connectionType")?.InnerText;
                 bool useParameterPrefixInSql = StringToBool(item.SelectSingleNode("useParameterPrefixInSql")?.InnerText);
@@ -382,7 +392,6 @@ namespace WangSql
                 bool useQuotationInSql = StringToBool(item.SelectSingleNode("useQuotationInSql")?.InnerText);
                 bool debug = StringToBool(item.SelectSingleNode("debug")?.InnerText);
 
-                if (!enabled) continue;
                 result.Add(new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
             }
             return result;
@@ -415,7 +424,6 @@ namespace WangSql
                     json = item.Value;
                     var sod = new JsonReader(json).Value;
                     string name = GetDictString(sod, "name");
-                    bool enabled = StringToBool(GetDictString(sod, "enabled"));
                     string connectionString = GetDictString(sod, "connectionString");
                     string connectionType = GetDictString(sod, "connectionType");
                     bool useParameterPrefixInSql = StringToBool(GetDictString(sod, "useParameterPrefixInSql"));
@@ -424,7 +432,6 @@ namespace WangSql
                     bool useQuotationInSql = StringToBool(GetDictString(sod, "useQuotationInSql"));
                     bool debug = StringToBool(GetDictString(sod, "debug"));
 
-                    if (!enabled) continue;
                     result.Add(new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
                 }
             }

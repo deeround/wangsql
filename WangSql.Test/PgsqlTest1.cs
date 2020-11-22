@@ -15,7 +15,6 @@ namespace WangSql.Test
                     "Pgsql",
                     "User ID=postgres;Password=123456;Host=127.0.0.1;Port=5432;Database=test;",
                     "Npgsql.NpgsqlConnection,Npgsql",
-                    "Npgsql.NpgsqlDataAdapter,Npgsql",
                     true,
                     true,
                     ":",
@@ -36,7 +35,7 @@ namespace WangSql.Test
             }
 
             //创建表
-            _sqlMapper.Migrate.Run();
+            _sqlMapper.Migrate().Run();
 
             //删除数据
             _sqlMapper.Entity<Models.UserInfo>().Delete();

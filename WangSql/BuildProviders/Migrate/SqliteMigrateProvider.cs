@@ -7,62 +7,43 @@ namespace WangSql.BuildProviders.Migrate
 {
     public class SqliteMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
-        public override void AddColumn(string tableName, ColumnInfo columnInfo)
-        {
-            ResolveColumnInfo(columnInfo);
-            string defaultValue = columnInfo.DefaultValue == null ? "" : (columnInfo.DefaultValue is string) ? $"'{columnInfo.DefaultValue}'" : $"{columnInfo.DefaultValue}";
-            sqlMapper.Execute($"ALTER TABLE {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(tableName)} ADD COLUMN {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(columnInfo.Name)} {ResolveDataType(columnInfo)} {(columnInfo.IsNotNull ? "not null" : "")} {(string.IsNullOrEmpty(defaultValue) ? "" : $"default {defaultValue}")}", null);
-        }
-
-        public override void CreateTable(TableInfo tableInfo)
-        {
-            var sqls = CreateSql(tableInfo);
-            using (var trans = sqlMapper.BeginTransaction())
-            {
-                try
-                {
-                    foreach (var item in sqls)
-                    {
-                        trans.Execute(item, null);
-                    }
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw new SqlException(ex.Message);
-                }
-            }
-        }
-
-        public override void DropTable(string tableName)
-        {
-            sqlMapper.Execute($"DROP TABLE {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(tableName)}", null);
-        }
-
-
-
         public override void Run()
         {
             var tables = TableMap.GetMaps().Where(x => x.AutoCreate).ToList();
-            for (int i = 0; i < tables.Count; i++)
+
+            if (sqlMapper != null)
             {
-                var table = tables[i];
-                var sqls = CreateSql(table);
-                using (var trans = this.sqlMapper.BeginTransaction())
+                for (int i = 0; i < tables.Count; i++)
                 {
-                    try
+                    var table = tables[i];
+                    var sqls = CreateSql(table);
+                    using (var trans = sqlMapper.BeginTransaction())
                     {
-                        foreach (var item in sqls)
+                        try
                         {
-                            trans.Execute(item, null);
+                            foreach (var item in sqls)
+                            {
+                                trans.Execute(item, null);
+                            }
+                            trans.Commit();
                         }
-                        trans.Commit();
+                        catch (Exception ex)
+                        {
+                            trans.Rollback();
+                            throw new SqlException(ex.Message);
+                        }
                     }
-                    catch (Exception ex)
+                }
+            }
+            else
+            {
+                for (int i = 0; i < tables.Count; i++)
+                {
+                    var table = tables[i];
+                    var sqls = CreateSql(table);
+                    foreach (var item in sqls)
                     {
-                        trans.Rollback();
-                        throw new SqlException(ex.Message);
+                        sqlExe.Execute(item, null);
                     }
                 }
             }
@@ -75,13 +56,13 @@ namespace WangSql.BuildProviders.Migrate
             IList<string> result = new List<string>();
             StringBuilder sb = new StringBuilder();
             //表结构
-            sb.AppendLine($"create table if not exists {sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)}(");
+            sb.AppendLine($"create table if not exists {sqlExe.SqlFactory.DbProvider.FormatQuotationForSql(table.Name)}(");
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 var item = table.Columns[i];
                 ResolveColumnInfo(item);
                 string defaultValue = item.DefaultValue == null ? "" : (item.DefaultValue is string) ? $"'{item.DefaultValue}'" : $"{item.DefaultValue}";
-                string colSql = $"{sqlMapper.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {ResolveDataType(item)} {(item.IsNotNull ? "not null" : "")}";
+                string colSql = $"{sqlExe.SqlFactory.DbProvider.FormatQuotationForSql(item.Name)} {ResolveDataType(item)} {(item.IsNotNull ? "not null" : "")}";
                 if (item.IsPrimaryKey)
                 {
                     colSql += " primary key";

@@ -11,7 +11,7 @@ namespace WangSql
         internal static string GetHashCode(string str)
         {
             StringBuilder sb = new StringBuilder();
-            byte[] source = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(str));
+            byte[] source = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
             for (int i = 0; i < source.Length; i++)
             {
                 sb.Append(source[i].ToString("x2"));

@@ -326,10 +326,5 @@ namespace WangSql
             }
             return obj;
         }
-
-
-
-
-
     }
 }
