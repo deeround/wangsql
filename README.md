@@ -2,9 +2,9 @@
 
 ### 介绍
 
-一个简单、通用数据库操作工具类库。
+一个简单、通用数据库操作工具库。
 
-支持NET Standard 2.0和NET Framework 4.0。
+支持NET Standard 2.0。
 
 ### 配置文件
 
