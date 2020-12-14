@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using WangSql.DependencyInjection;
 
 namespace WangSql
 {
@@ -180,6 +181,8 @@ namespace WangSql
                 }
             }
             DbProviderConfigCache[name] = dbProvider;
+            //注入
+            IocManager.AddService<IPageProvider, DefaultPageProvider>(name);
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序
@@ -207,6 +210,8 @@ namespace WangSql
                         }
                     }
                     DbProviderConfigCache[item.Name] = item;
+                    //注入
+                    IocManager.AddService<IPageProvider, DefaultPageProvider>(item.Name);
                 }
             }
         }
@@ -224,7 +229,9 @@ namespace WangSql
         /// <returns></returns>
         public static DbProvider Get(string name)
         {
-            if (string.IsNullOrEmpty(name) && _dbProvider != null && _dbProvider.Name == name)
+            if (string.IsNullOrEmpty(name)) return Get();
+
+            if (_dbProvider != null && _dbProvider.Name == name)
             {
                 return _dbProvider;
             }
