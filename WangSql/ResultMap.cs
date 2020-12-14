@@ -16,10 +16,8 @@ namespace WangSql
             {
                 case StandardType.Dictionary:
                     return DeserializerDictionary<T>(reader);
-
                 case StandardType.Simple:
                     return (T)DeserializerSimple(reader);
-
                 case StandardType.Class:
                     return DeserializerClass<T>(reader);
             }
@@ -33,17 +31,7 @@ namespace WangSql
 
 
 
-        private object GetReaderValue(IDataReader reader, int index)
-        {
-            if (reader.FieldCount <= index)
-            {
-                return TypeMap.ConvertToType(null, typeof(object));
-            }
-
-            var type = reader.GetFieldType(index);
-            var obj = reader.GetValue(index);
-            return TypeMap.ConvertToType(obj, type);
-        }
+        
 
         private T DeserializerClass<T>(IDataReader reader)
         {
@@ -85,6 +73,18 @@ namespace WangSql
         {
             var obj = GetReaderValue(reader, 0);
             return obj;
+        }
+
+        private object GetReaderValue(IDataReader reader, int index)
+        {
+            if (reader.FieldCount <= index)
+            {
+                return TypeMap.ConvertToType(null, typeof(object));
+            }
+
+            var type = reader.GetFieldType(index);
+            var obj = reader.GetValue(index);
+            return TypeMap.ConvertToType(obj, type);
         }
     }
 }

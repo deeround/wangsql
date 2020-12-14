@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
-using WangSql.BuildProviders.Formula;
-using WangSql.BuildProviders.Migrate;
-using WangSql.BuildProviders.Paged;
 
 namespace WangSql
 {
@@ -63,10 +57,7 @@ namespace WangSql
             Debug = debug;
         }
 
-        public override string ToString()
-        {
-            return $"{Name}{ConnectionString}{ConnectionType}{UseParameterPrefixInSql}{UseParameterPrefixInParameter}{ParameterPrefix}{UseQuotationInSql}";
-        }
+
 
         public string ConnectionString { get; }
         public string[] ConnectionReadString { get; }
@@ -77,9 +68,6 @@ namespace WangSql
         public bool UseParameterPrefixInSql { get; }
         public bool UseQuotationInSql { get; }
         public bool Debug { get; }
-        public IPageProvider PageProvider { get; private set; }
-        public IMigrateProvider MigrateProvider { get; private set; }
-        public IFormulaProvider FormulaProvider { get; private set; }
 
         public DbConnection CreateConnection(bool isReadDb)
         {
@@ -123,30 +111,12 @@ namespace WangSql
         }
 
 
-        public void SetPageProvider(IPageProvider pageProvider)
-        {
-            PageProvider = pageProvider;
-        }
-
-        public void SetFormulaProvider(IFormulaProvider formulaProvider)
-        {
-            FormulaProvider = formulaProvider;
-        }
-
-        public void SetMigrateProvider(IMigrateProvider migrateProvider)
-        {
-            MigrateProvider = migrateProvider;
-        }
-
-
-
 
         private Type GetCacheType()
         {
-            var code = Utils.GetHashCode(this.ToString());
-            if (ConnectionTypeCache.ContainsKey(code))
+            if (ConnectionTypeCache.ContainsKey(Name))
             {
-                return ConnectionTypeCache[code];
+                return ConnectionTypeCache[Name];
             }
 
             Type type;
@@ -163,7 +133,7 @@ namespace WangSql
             {
                 ConnectionTypeCache.Clear();
             }
-            ConnectionTypeCache[code] = type ?? throw new SqlException(ConnectionType + "加载失败");
+            ConnectionTypeCache[Name] = type ?? throw new SqlException(ConnectionType + "加载失败");
             return type;
         }
     }
@@ -199,7 +169,6 @@ namespace WangSql
             {
                 DbProviderConfigCache.Clear();
             }
-            SetBuildProvider(dbProvider);
             if (_dbProvider == null)
             {
                 lock (_obj_lock)
@@ -227,7 +196,6 @@ namespace WangSql
                 }
                 foreach (var item in dbProviders)
                 {
-                    SetBuildProvider(item);
                     if (_dbProvider == null)
                     {
                         lock (_obj_lock)
@@ -256,7 +224,7 @@ namespace WangSql
         /// <returns></returns>
         public static DbProvider Get(string name)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name) && _dbProvider != null && _dbProvider.Name == name)
             {
                 return _dbProvider;
             }
@@ -272,40 +240,15 @@ namespace WangSql
         /// <returns></returns>
         public static DbProvider Get()
         {
-            return Get(null);
-        }
-
-
-
-
-
-
-
-
-
-
-
-        private static void SetBuildProvider(DbProvider dbProvider)
-        {
-            var type = dbProvider.ConnectionType?.ToLower();
-            if (type.Contains("oracle"))
+            if (_dbProvider != null)
             {
-                dbProvider.SetPageProvider(new OraclePageProvider());
-                dbProvider.SetMigrateProvider(new OracleMigrateProvider());
-                dbProvider.SetFormulaProvider(new OracleFormulaProvider());
+                return _dbProvider;
             }
-            else if (type.Contains("pgsql"))
+            if (DbProviderConfigCache.Count > 0)
             {
-                dbProvider.SetPageProvider(new PgsqlPageProvider());
-                dbProvider.SetMigrateProvider(new PgsqlMigrateProvider());
-                dbProvider.SetFormulaProvider(new PgsqlFormulaProvider());
+                return DbProviderConfigCache.First().Value;
             }
-            else if (type.Contains("sqlite"))
-            {
-                dbProvider.SetPageProvider(new SqlitePageProvider());
-                dbProvider.SetMigrateProvider(new SqliteMigrateProvider());
-                dbProvider.SetFormulaProvider(new SqliteFormulaProvider());
-            }
+            throw new SqlException($"未找到数据库的配置信息");
         }
 
 
@@ -438,8 +381,6 @@ namespace WangSql
 
             return result;
         }
-
-
         private static bool StringToBool(string str)
         {
             if (string.IsNullOrEmpty(str)) return false;

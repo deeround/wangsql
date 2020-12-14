@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using WangSql.BuildProviders.Formula;
-using WangSql.BuildProviders.Migrate;
 
 namespace WangSql
 {
@@ -198,6 +193,12 @@ namespace WangSql
             Dispose();
         }
 
+        public void Rollback()
+        {
+            _trans.Rollback();
+            Dispose();
+        }
+
         public void Dispose()
         {
             if (_trans != null)
@@ -267,12 +268,6 @@ namespace WangSql
                     return list;
                 }
             }
-        }
-
-        public void Rollback()
-        {
-            _trans.Rollback();
-            Dispose();
         }
 
         public T Scalar<T>(string sql, object param)

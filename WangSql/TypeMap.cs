@@ -132,7 +132,7 @@ namespace WangSql
 
 
         /// <summary>
-        /// 数据库字段值=》根据c#类型转成c#值
+        /// 数据库值转换成C#值
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="type"></param>
@@ -279,9 +279,7 @@ namespace WangSql
 
 
         /// <summary>
-        /// 将C#值=》处理成数据库字段值
-        /// 枚举=》转字符
-        /// 布尔=》转字符(true 1;false 0;未知 null)
+        /// 将C#值转换成数据库值
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>

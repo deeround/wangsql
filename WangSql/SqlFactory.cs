@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
-using System.Text;
 
 namespace WangSql
 {
@@ -31,29 +28,10 @@ namespace WangSql
 
         public DbCommand CreateCommand(DbConnection conn, string sql, object param, CommandType commandType, int? timeout = null)
         {
-            //调试日志
-            if (DbProvider.Debug)
-            {
-                Debug.WriteLine("处理前SQL:" + sql);
-            }
             var cmd = conn.CreateCommand();
             if (timeout != null) cmd.CommandTimeout = (int)timeout;
-            ParamMap.GetCacheMap(DbProvider, sql).Prepare(cmd, param, commandType);
-            //调试日志
-            if (DbProvider.Debug)
-            {
-                Debug.WriteLine("处理后SQL:" + cmd.CommandText);
-                StringBuilder sb = new StringBuilder();
-                var ps = cmd.Parameters;
-                if (ps != null && ps.Count > 0)
-                {
-                    foreach (IDbDataParameter item in ps)
-                    {
-                        sb.Append($"\"{item.ParameterName}\":\"{item.Value?.ToString()}\",");
-                    }
-                }
-                Debug.WriteLine("处理后参数:" + "{" + sb.ToString().TrimEnd(',') + "}");
-            }
+            ParamMap.GetCacheMap(DbProvider, sql, commandType).Prepare(cmd, param);
+            ParamMap.GetCacheMap(DbProvider, sql, commandType).Prepare(cmd, param);
             return cmd;
         }
 

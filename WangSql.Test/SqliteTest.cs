@@ -105,6 +105,9 @@ namespace WangSql.Test
             var users2 = _sqlMapper.Query<Dictionary<string, object>>(sql, null).ToList();
             var users3 = _sqlMapper.QueryFirstOrDefault<Dictionary<string, object>>(sql, null);
 
+
+            var user4 = (_sqlMapper.QueryAsync<Dictionary<string, object>>(sql, null).Result).ToList();
+
         }
     }
 }

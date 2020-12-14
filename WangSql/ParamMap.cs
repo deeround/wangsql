@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -11,14 +10,30 @@ namespace WangSql
 {
     public class ParamHandler
     {
-        private readonly IList<ParamKey> _paramKeys = new List<ParamKey>();
+        struct ParamKey
+        {
+            public ParamKey(string v1, string v2, string v3)
+            {
+                FullName = v1;
+                Name = v2;
+                Type = v3;
+            }
+
+            public string FullName { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+        }
+
+        private readonly List<ParamKey> _paramKeys;
         private readonly DbProvider _dbProvider;
         private readonly string _sql;
 
-        public ParamHandler(DbProvider dbProvider, string sql)
+        public ParamHandler(DbProvider dbProvider, string sql, CommandType commandType)
         {
+            _paramKeys = new List<ParamKey>();
             _dbProvider = dbProvider;
             _sql = sql;
+            CommandType = commandType;
             var regex = new Regex(@"[#\$]([\s\S]*?)[#\$]", RegexOptions.IgnoreCase | RegexOptions.Multiline);
             var ms = regex.Matches(sql);
             foreach (Match item in ms)
@@ -29,11 +44,6 @@ namespace WangSql
                     var v2 = item.Groups[1].Value;
                     var v3 = v1.StartsWith("#") ? "#" : "$";
 
-                    //if (!_paramKeys.Any(op => op.FullName.Equals(v1)))
-                    //{
-                    //    ParamKey k = new ParamKey(v1, v2, v3);
-                    //    _paramKeys.Add(k);
-                    //}
                     ParamKey k = new ParamKey(v1, v2, v3);
                     _paramKeys.Add(k);
                 }
@@ -42,18 +52,17 @@ namespace WangSql
 
         public CommandType CommandType { get; private set; }
 
-        public IList<IDbDataParameter> PrepareParameters { get; private set; }
-
         public string PrepareSql { get; private set; }
 
-        public void Prepare(IDbCommand cmd, object param, CommandType commandType)
+        public List<IDbDataParameter> PrepareParameters { get; private set; }
+
+        public void Prepare(IDbCommand cmd, object param)
         {
             PrepareSql = _sql;
-            CommandType = commandType;
-
+            PrepareParameters = new List<IDbDataParameter>();
             if (param != null)
             {
-                if (commandType == CommandType.Text)
+                if (CommandType == CommandType.Text)
                 {
                     var type = TypeMap.GetStandardType(param);
                     switch (type)
@@ -61,17 +70,15 @@ namespace WangSql
                         case StandardType.Dictionary:
                             SerializerDictionary(cmd, (IDictionary)param);
                             break;
-
                         case StandardType.Simple:
                             SerializerSimple(cmd, param);
                             break;
-
                         case StandardType.Class:
                             SerializerClass(cmd, param);
                             break;
                     }
                 }
-                else if (commandType == CommandType.StoredProcedure)
+                else if (CommandType == CommandType.StoredProcedure)
                 {
                     throw new SqlException("暂不支持存储过程");
                 }
@@ -85,25 +92,75 @@ namespace WangSql
 
 
 
-        //private void CheckParamValue(object value)
-        //{
-        //    return;
 
-        //    //if (value == null || value is DBNull) return;
-        //    //if (!(value is string)) return;
 
-        //    //var vs = value.ToString().ToLower();
-        //    //if (string.IsNullOrEmpty(vs)) return;
-        //    //string[] ds =
-        //    //{
-        //    //    "select", "insert", "delete", "update", "drop", "truncate", "declare", "exec", "script", "master",
-        //    //    "mid", "net user", "and", "or", "join"
-        //    //};
-        //    //if (ds.Any(item => vs.IndexOf(item, StringComparison.Ordinal) != -1))
-        //    //{
-        //    //    throw new SqlException("执行SQL中包含危险字符：" + vs);
-        //    //}
-        //}
+
+
+
+
+
+
+        private void SerializerClass(IDbCommand cmd, object param)
+        {
+            if (param == null) return;
+            var param1 = new Dictionary<string, object>();
+            param.GetType().GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public)
+                .ToList().ForEach(op => param1.Add(op.Name, op.GetValue(param, null)));
+            SerializerDictionary(cmd, param1);
+        }
+
+        private void SerializerDictionary(IDbCommand cmd, IDictionary param)
+        {
+            if (param == null || param.Count == 0) return;
+            int pi = 1;
+            foreach (var item in _paramKeys)
+            {
+                if (!DictionaryContainsKey(param, item.Name)) throw new SqlException($"参数{item.Name}未绑定值");
+
+                if (item.Type == "#")
+                {
+                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
+                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
+
+                    var p = cmd.CreateParameter();
+                    p.ParameterName = parameterName;
+                    p.Value = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
+                    PrepareParameters.Add(p);
+
+                }
+                else
+                {
+                    var obj = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
+                    PrepareSql = PrepareSql.Replace(item.FullName, obj?.ToString());
+                }
+            }
+        }
+
+        private void SerializerSimple(IDbCommand cmd, object param)
+        {
+            if (param == null) return;
+            int pi = 1;
+            foreach (var item in _paramKeys)
+            {
+                if (item.Type == "#")
+                {
+                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
+                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
+
+                    var p = cmd.CreateParameter();
+                    p.ParameterName = parameterName;
+                    p.Value = TypeMap.ResolveParamValue(param);
+                    PrepareParameters.Add(p);
+                }
+                else
+                {
+                    var obj = TypeMap.ResolveParamValue(param);
+                    PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? string.Empty : obj.ToString());
+                }
+            }
+        }
 
         private bool DictionaryContainsKey(IDictionary param, string key)
         {
@@ -127,86 +184,6 @@ namespace WangSql
 
             return null;
         }
-
-        private void SerializerClass(IDbCommand cmd, object param)
-        {
-            if (param == null) return;
-            var param1 = new Dictionary<string, object>();
-            param.GetType().GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public)
-                .ToList().ForEach(op => param1.Add(op.Name, op.GetValue(param, null)));
-            SerializerDictionary(cmd, param1);
-        }
-
-        private void SerializerDictionary(IDbCommand cmd, IDictionary param)
-        {
-            PrepareParameters = new List<IDbDataParameter>();
-            if (param == null || param.Count == 0) return;
-            int pi = 1;
-            foreach (var item in _paramKeys)
-            {
-                if (!DictionaryContainsKey(param, item.Name)) throw new SqlException($"参数{item.Name}未绑定值");
-
-                if (item.Type == "#")
-                {
-                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
-                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
-
-                    var p = cmd.CreateParameter();
-                    p.ParameterName = parameterName;
-                    p.Value = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
-                    PrepareParameters.Add(p);
-
-                }
-                else
-                {
-                    var obj = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
-                    //CheckParamValue(obj);
-                    PrepareSql = PrepareSql.Replace(item.FullName, obj?.ToString());
-                }
-            }
-        }
-
-        private void SerializerSimple(IDbCommand cmd, object param)
-        {
-            PrepareParameters = new List<IDbDataParameter>();
-            if (param == null) return;
-            int pi = 1;
-            foreach (var item in _paramKeys)
-            {
-                if (item.Type == "#")
-                {
-                    Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
-                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
-
-                    var p = cmd.CreateParameter();
-                    p.ParameterName = parameterName;
-                    p.Value = TypeMap.ResolveParamValue(param);
-                    PrepareParameters.Add(p);
-                }
-                else
-                {
-                    var obj = TypeMap.ResolveParamValue(param);
-                    //CheckParamValue(obj);
-                    PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? string.Empty : obj.ToString());
-                }
-            }
-        }
-
-        class ParamKey
-        {
-            public ParamKey(string v1, string v2, string v3)
-            {
-                FullName = v1;
-                Name = v2;
-                Type = v3;
-            }
-
-            public string FullName { get; set; }
-            public string Name { get; set; }
-            public string Type { get; set; }
-        }
     }
 
     public class ParamMap
@@ -217,9 +194,9 @@ namespace WangSql
         private static readonly ConcurrentDictionary<string, ParamHandler> ParamHandlerCache = new ConcurrentDictionary<string, ParamHandler>();
         private static readonly int ParamHandlerCacheSize = 100000;
 
-        public ParamHandler GetCacheMap(DbProvider dbProvider, string sql)
+        public ParamHandler GetCacheMap(DbProvider dbProvider, string sql, CommandType commandType)
         {
-            string code = Utils.GetHashCode(dbProvider.ToString() + sql);
+            string code = string.Format("{0}_{1}_{2}", dbProvider.Name, commandType.ToString(), sql);
 
             //存在
             if (ParamHandlerCache.ContainsKey(code))
@@ -235,7 +212,7 @@ namespace WangSql
                     ParamHandlerCache.Clear();
                 }
 
-                var handler = new ParamHandler(dbProvider, sql);
+                var handler = new ParamHandler(dbProvider, sql, commandType);
                 ParamHandlerCache[code] = handler;
                 return handler;
             }
