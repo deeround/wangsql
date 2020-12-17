@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.Abstract.Attributes
 {
     /// <summary>
     /// 字段特性(忽略列)

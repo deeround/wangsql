@@ -1,6 +1,8 @@
-﻿using System;
+﻿using WangSql.Abstract.Migrate;
+using WangSql.Abstract.Paged;
 using WangSql.DependencyInjection;
-using WangSql.Sqlite.Providers.Paged;
+using WangSql.Sqlite.Migrate;
+using WangSql.Sqlite.Paged;
 
 namespace WangSql.Sqlite
 {
@@ -15,20 +17,21 @@ namespace WangSql.Sqlite
         private const bool _useQuotationInSql = false;
         private const bool _debug = false;
 
-        public void Init(string connectionString)
+        public static void Init(string connectionString)
         {
-            this.Init(_name, connectionString);
+            Init(_name, connectionString);
         }
-        public void Init(string name, string connectionString)
+        public static void Init(string name, string connectionString)
         {
-            this.Init(name, connectionString, _connectionType, _useParameterPrefixInSql, _useParameterPrefixInParameter, _parameterPrefix, _useQuotationInSql, _debug);
+            Init(name, connectionString, _connectionType, _useParameterPrefixInSql, _useParameterPrefixInParameter, _parameterPrefix, _useQuotationInSql, _debug);
         }
-        public void Init(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql, bool debug = false)
+        public static void Init(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql, bool debug = false)
         {
             DbProviderManager.Set(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug);
 
             //注入覆盖
             IocManager.AddService<IPageProvider, PageProvider>(name);
+            IocManager.AddService<IMigrateProvider, MigrateProvider>(name);
         }
     }
 }

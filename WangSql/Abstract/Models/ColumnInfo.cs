@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.Abstract.Models
 {
     public class ColumnInfo
     {
@@ -17,7 +17,7 @@ namespace WangSql
         /// <summary>
         /// 字段名
         /// </summary>
-        public string Name { get; set; }
+        public string ColumnName { get; set; }
         /// <summary>
         /// 注释
         /// </summary>

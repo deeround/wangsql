@@ -5,11 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AspNetCore\**" />
+    <EmbeddedResource Remove="AspNetCore\**" />
+    <None Remove="AspNetCore\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WangSql\WangSql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="AspNetCore\Extensions\" />
+    <Folder Include="Linq\" />
   </ItemGroup>
 
 </Project>

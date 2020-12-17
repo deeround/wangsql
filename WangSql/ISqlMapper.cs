@@ -15,8 +15,8 @@ namespace WangSql
         /// <param name="sql">SQL语句</param>
         /// <param name="param">参数（Dictionary、Simple、Class）</param>
         /// <returns></returns>
-        int Execute(string sql, object param);
-        Task<int> ExecuteAsync(string sql, object param);
+        int Execute(string sql, object param, int? timeout = null);
+        Task<int> ExecuteAsync(string sql, object param, int? timeout = null);
 
         /// <summary>
         ///      SQL查询单条
@@ -25,8 +25,8 @@ namespace WangSql
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        T QueryFirstOrDefault<T>(string sql, object param);
-        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param);
+        T QueryFirstOrDefault<T>(string sql, object param, int? timeout = null);
+        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param, int? timeout = null);
 
         /// <summary>
         ///     SQL查询
@@ -35,8 +35,10 @@ namespace WangSql
         /// <param name="sql">SQL语句</param>
         /// <param name="param">参数（Dictionary、Simple、Class）（注意：枚举一律会转换成字符串处理）</param>
         /// <returns></returns>
-        IEnumerable<T> Query<T>(string sql, object param);
-        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param);
+        IEnumerable<T> Query<T>(string sql, object param, int? timeout = null);
+        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, int? timeout = null);
+        IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null);
+        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, bool buffered = true, int? timeout = null);
 
         /// <summary>
         ///     返回值为结果集中第一行的第一列或空引用（如果结果集为空）
@@ -45,8 +47,8 @@ namespace WangSql
         /// <param name="sql">SQL语句</param>
         /// <param name="param">参数（Dictionary、Simple、Class）（注意：枚举一律会转换成字符串处理）</param>
         /// <returns></returns>
-        T Scalar<T>(string sql, object param);
-        Task<T> ScalarAsync<T>(string sql, object param);
+        T Scalar<T>(string sql, object param, int? timeout = null);
+        Task<T> ScalarAsync<T>(string sql, object param, int? timeout = null);
 
         /// <summary>
         ///     SQL查询
@@ -55,8 +57,8 @@ namespace WangSql
         /// <param name="sql">SQL语句</param>
         /// <param name="param">参数（Dictionary、Simple、Class）（注意：枚举一律会转换成字符串处理）</param>
         /// <returns></returns>
-        DataTable QueryTable(string sql, object param, string tableName = "p_Out");
-        Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out");
+        DataTable QueryTable(string sql, object param, string tableName = "p_Out", int? timeout = null);
+        Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out", int? timeout = null);
 
     }
 

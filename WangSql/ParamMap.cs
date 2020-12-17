@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace WangSql
@@ -120,19 +122,57 @@ namespace WangSql
                 if (item.Type == "#")
                 {
                     Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
-                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
 
-                    var p = cmd.CreateParameter();
-                    p.ParameterName = parameterName;
-                    p.Value = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
-                    PrepareParameters.Add(p);
-
+                    var parameterValue = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
+                    if (parameterValue is Array arr)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        int ai = 1;
+                        foreach (var a in arr)
+                        {
+                            //参数名
+                            var p1 = _dbProvider.FormatNameForParameter($"param{pi}_{(ai++)}");
+                            //参数对象
+                            var p = cmd.CreateParameter();
+                            p.ParameterName = p1;
+                            p.Value = TypeMap.ResolveParamValue(a);
+                            PrepareParameters.Add(p);
+                            //生成sql部分
+                            sb.Append($"{p1},");
+                        }
+                        var parameterName = sb.ToString().TrimEnd(',');
+                        PrepareSql = regex.Replace(PrepareSql, $" ({parameterName})", 1);
+                        pi++;
+                    }
+                    else
+                    {
+                        var parameterName = _dbProvider.FormatNameForParameter($"param{pi++}");
+                        PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
+                        var p = cmd.CreateParameter();
+                        p.ParameterName = parameterName;
+                        p.Value = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
+                        PrepareParameters.Add(p);
+                    }
                 }
                 else
                 {
                     var obj = TypeMap.ResolveParamValue(DictionaryGetValue(param, item.Name));
-                    PrepareSql = PrepareSql.Replace(item.FullName, obj?.ToString());
+                    if (obj is Array arr)//数组参数处理
+                    {
+                        var objType = TypeMap.GetCollectionStandardType(obj);
+                        if (objType == SimpleStandardType.Numeric)
+                        {
+                            PrepareSql = PrepareSql.Replace(item.FullName, $" ({(string.Join(",", arr))})");
+                        }
+                        else
+                        {
+                            PrepareSql = PrepareSql.Replace(item.FullName, $" ('{(string.Join("','", arr))}')");
+                        }
+                    }
+                    else
+                    {
+                        PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? "NULL" : obj?.ToString());
+                    }
                 }
             }
         }
@@ -146,18 +186,57 @@ namespace WangSql
                 if (item.Type == "#")
                 {
                     Regex regex = new Regex(item.FullName, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    var parameterName = _dbProvider.FormatNameForParameter(item.Name) + "_" + (pi++);
-                    PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
 
-                    var p = cmd.CreateParameter();
-                    p.ParameterName = parameterName;
-                    p.Value = TypeMap.ResolveParamValue(param);
-                    PrepareParameters.Add(p);
+                    var parameterValue = TypeMap.ResolveParamValue(param);
+                    if (parameterValue is Array arr)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        int ai = 1;
+                        foreach (var a in arr)
+                        {
+                            //参数名
+                            var p1 = _dbProvider.FormatNameForParameter($"param{pi}_{(ai++)}");
+                            //参数对象
+                            var p = cmd.CreateParameter();
+                            p.ParameterName = p1;
+                            p.Value = TypeMap.ResolveParamValue(a);
+                            PrepareParameters.Add(p);
+                            //生成sql部分
+                            sb.Append($"{p1},");
+                        }
+                        var parameterName = sb.ToString().TrimEnd(',');
+                        PrepareSql = regex.Replace(PrepareSql, $" ({parameterName})", 1);
+                        pi++;
+                    }
+                    else
+                    {
+                        var parameterName = _dbProvider.FormatNameForParameter($"param{pi++}");
+                        PrepareSql = regex.Replace(PrepareSql, parameterName, 1);
+                        var p = cmd.CreateParameter();
+                        p.ParameterName = parameterName;
+                        p.Value = TypeMap.ResolveParamValue(param);
+                        PrepareParameters.Add(p);
+                    }
                 }
                 else
                 {
                     var obj = TypeMap.ResolveParamValue(param);
-                    PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? string.Empty : obj.ToString());
+                    if (obj is Array arr)//数组参数处理
+                    {
+                        var objType = TypeMap.GetCollectionStandardType(obj);
+                        if (objType == SimpleStandardType.Numeric)
+                        {
+                            PrepareSql = PrepareSql.Replace(item.FullName, $" ({(string.Join(",", arr))})");
+                        }
+                        else
+                        {
+                            PrepareSql = PrepareSql.Replace(item.FullName, $" ('{(string.Join("','", arr))}')");
+                        }
+                    }
+                    else
+                    {
+                        PrepareSql = PrepareSql.Replace(item.FullName, obj == null ? "NULL" : obj?.ToString());
+                    }
                 }
             }
         }

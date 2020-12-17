@@ -7,7 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using WangSql.Abstract.Migrate;
+using WangSql.Abstract.Paged;
 using WangSql.DependencyInjection;
+using WangSql.Utils;
 
 namespace WangSql
 {
@@ -182,7 +185,7 @@ namespace WangSql
             }
             DbProviderConfigCache[name] = dbProvider;
             //注入
-            IocManager.AddService<IPageProvider, DefaultPageProvider>(name);
+            AddDefaultService(name);
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序
@@ -211,7 +214,7 @@ namespace WangSql
                     }
                     DbProviderConfigCache[item.Name] = item;
                     //注入
-                    IocManager.AddService<IPageProvider, DefaultPageProvider>(item.Name);
+                    AddDefaultService(item.Name);
                 }
             }
         }
@@ -258,7 +261,12 @@ namespace WangSql
             throw new SqlException($"未找到数据库的配置信息");
         }
 
-
+        private static void AddDefaultService(string name)
+        {
+            //注入
+            IocManager.AddService<IPageProvider, DefaultPageProvider>(name);
+            IocManager.AddService<IMigrateProvider, DefaultMigrateProvider>(name);
+        }
         private static IList<DbProvider> GetConfigFile(string config)
         {
             if (string.IsNullOrEmpty(config))

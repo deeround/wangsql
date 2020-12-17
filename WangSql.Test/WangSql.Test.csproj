@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WangSql.Sqlite\WangSql.Sqlite.csproj" />
     <ProjectReference Include="..\WangSql\WangSql.csproj" />
   </ItemGroup>
 

@@ -16,7 +16,7 @@ namespace WangSql
                 await conn.OpenAsync();
         }
 
-        public async Task<int> ExecuteAsync(string sql, object param)
+        public async Task<int> ExecuteAsync(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(false);
             try
@@ -31,7 +31,7 @@ namespace WangSql
             }
         }
 
-        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param)
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -59,7 +59,12 @@ namespace WangSql
             }
         }
 
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, int? timeout = null)
+        {
+            return await this.QueryAsync<T>(sql, param, true, timeout);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, bool buffered = true, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -86,7 +91,7 @@ namespace WangSql
             }
         }
 
-        public async Task<T> ScalarAsync<T>(string sql, object param)
+        public async Task<T> ScalarAsync<T>(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -106,7 +111,7 @@ namespace WangSql
             }
         }
 
-        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out")
+        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out", int? timeout = null)
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;
@@ -136,7 +141,7 @@ namespace WangSql
     /// </summary>
     public partial class SqlTrans : ISqlTrans
     {
-        public async Task<int> ExecuteAsync(string sql, object param)
+        public async Task<int> ExecuteAsync(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -146,7 +151,7 @@ namespace WangSql
             }
         }
 
-        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param)
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             using (cmd)
@@ -165,7 +170,12 @@ namespace WangSql
             }
         }
 
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, int? timeout = null)
+        {
+            return await this.QueryAsync<T>(sql, param, true, timeout);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, bool buffered = true, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -184,7 +194,7 @@ namespace WangSql
             }
         }
 
-        public async Task<T> ScalarAsync<T>(string sql, object param)
+        public async Task<T> ScalarAsync<T>(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -196,7 +206,7 @@ namespace WangSql
             }
         }
 
-        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out")
+        public async Task<DataTable> QueryTableAsync(string sql, object param, string tableName = "p_Out", int? timeout = null)
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;

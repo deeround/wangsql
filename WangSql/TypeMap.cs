@@ -111,6 +111,8 @@ namespace WangSql
                 return StandardType.Dictionary;
             if (type.IsEnum)
                 return StandardType.Simple;
+            if (type.IsArray)
+                return StandardType.Array;
             if (type.IsClass)
                 return StandardType.Class;
 
@@ -124,10 +126,23 @@ namespace WangSql
                 return Type2SimpleStandardTypeMap[type];
             if (type.IsEnum)
                 return SimpleStandardType.Enum;
+            if (type.IsArray)
+                return SimpleStandardType.Array;
 
             throw new SqlException("未知标准简单类型：" + type.ToString());
         }
 
+        public static SimpleStandardType GetCollectionStandardType(object obj)
+        {
+            if (obj is Array arr)
+            {
+                foreach (var item in arr)
+                {
+                    return GetSimpleStandardType(item);
+                }
+            }
+            return GetSimpleStandardType(obj);
+        }
 
 
 
@@ -217,6 +232,10 @@ namespace WangSql
                             result = (byte[])obj;
                         }
                         break;
+                    case SimpleStandardType.Array:
+                        {
+                            return (Array)obj;
+                        }
                 }
             }
             catch

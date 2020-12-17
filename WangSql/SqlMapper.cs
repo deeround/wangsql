@@ -54,7 +54,7 @@ namespace WangSql
             return new SqlTrans(SqlFactory);
         }
 
-        public int Execute(string sql, object param)
+        public int Execute(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(false);
             try
@@ -69,7 +69,7 @@ namespace WangSql
             }
         }
 
-        public T QueryFirstOrDefault<T>(string sql, object param)
+        public T QueryFirstOrDefault<T>(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -97,7 +97,12 @@ namespace WangSql
             }
         }
 
-        public IEnumerable<T> Query<T>(string sql, object param)
+        public IEnumerable<T> Query<T>(string sql, object param, int? timeout = null)
+        {
+            return this.Query<T>(sql, param, true, timeout);
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -124,7 +129,7 @@ namespace WangSql
             }
         }
 
-        public T Scalar<T>(string sql, object param)
+        public T Scalar<T>(string sql, object param, int? timeout = null)
         {
             var conn = CreateConnection(true);
             try
@@ -144,7 +149,7 @@ namespace WangSql
             }
         }
 
-        public DataTable QueryTable(string sql, object param, string tableName = "p_Out")
+        public DataTable QueryTable(string sql, object param, string tableName = "p_Out", int? timeout = null)
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;
@@ -222,7 +227,7 @@ namespace WangSql
             }
         }
 
-        public int Execute(string sql, object param)
+        public int Execute(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -232,7 +237,7 @@ namespace WangSql
             }
         }
 
-        public T QueryFirstOrDefault<T>(string sql, object param)
+        public T QueryFirstOrDefault<T>(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             using (cmd)
@@ -251,7 +256,12 @@ namespace WangSql
             }
         }
 
-        public IEnumerable<T> Query<T>(string sql, object param)
+        public IEnumerable<T> Query<T>(string sql, object param, int? timeout = null)
+        {
+            return this.Query<T>(sql, param, true, timeout);
+        }
+
+        public IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -270,7 +280,7 @@ namespace WangSql
             }
         }
 
-        public T Scalar<T>(string sql, object param)
+        public T Scalar<T>(string sql, object param, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;
@@ -282,7 +292,7 @@ namespace WangSql
             }
         }
 
-        public DataTable QueryTable(string sql, object param, string tableName = "p_Out")
+        public DataTable QueryTable(string sql, object param, string tableName = "p_Out", int? timeout = null)
         {
             DataTable dt = new DataTable();
             dt.TableName = tableName;

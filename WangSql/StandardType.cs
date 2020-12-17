@@ -17,7 +17,11 @@
         /// <summary>
         /// 实体
         /// </summary>
-        Class
+        Class,
+        /// <summary>
+        /// 数组
+        /// </summary>
+        Array
     }
     public enum SimpleStandardType
     {
@@ -61,6 +65,10 @@
         /// <summary>
         /// 二进制流（对应c#字节数组）
         /// </summary>
-        Binary
+        Binary,
+        /// <summary>
+        /// 数组
+        /// </summary>
+        Array
     }
 }

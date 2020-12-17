@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WangSql
+namespace WangSql.Abstract.Attributes
 {
     /// <summary>
     /// 表特性
@@ -16,7 +16,7 @@ namespace WangSql
         /// <summary>
         /// 表名
         /// </summary>
-        public string Name { get; set; }
+        public string TableName { get; set; }
         /// <summary>
         /// 类名
         /// </summary>

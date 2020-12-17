@@ -31,7 +31,6 @@ namespace WangSql
             var cmd = conn.CreateCommand();
             if (timeout != null) cmd.CommandTimeout = (int)timeout;
             ParamMap.GetCacheMap(DbProvider, sql, commandType).Prepare(cmd, param);
-            ParamMap.GetCacheMap(DbProvider, sql, commandType).Prepare(cmd, param);
             return cmd;
         }
 
