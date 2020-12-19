@@ -6,12 +6,18 @@ namespace WangSql.Abstract.Migrate
 {
     public class DefaultMigrateProvider : IMigrateProvider
     {
-        public virtual void Init(ISqlMapper sqlMapper)
+        #region constructor
+        protected ISqlExe _sqlMapper { get; set; }
+        public virtual void Init()
         {
-            throw new System.NotImplementedException();
         }
-
         public virtual void Init(ISqlExe sqlMapper)
+        {
+            _sqlMapper = sqlMapper;
+        }
+        #endregion
+
+        public virtual void CreateTable()
         {
             throw new System.NotImplementedException();
         }

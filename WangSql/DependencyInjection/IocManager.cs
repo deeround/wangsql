@@ -52,6 +52,5 @@ namespace WangSql.DependencyInjection
             var dbProvider = DbProviderManager.Get();
             return GetService<T>(dbProvider.Name);
         }
-
     }
 }

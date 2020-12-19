@@ -10,7 +10,7 @@ namespace WangSql.Abstract.Linq
         public string Sql { get; set; }
         public Dictionary<string, object> Parameter { get; set; }
     }
-    public interface ISqlProvider<T>
+    public interface ISqlProvider<T>: IProvider
     {
         #region interface
         ISqlProvider<T> With(string lockType);
@@ -64,43 +64,43 @@ namespace WangSql.Abstract.Linq
 
 
 
-    public interface IQueryable<T1, T2>
+    public interface ISqlProvider<T1, T2> : IProvider
     {
-        IQueryable<T1, T2> Join(string expression);
-        IQueryable<T1, T2> Join(Expression<Func<T1, T2, bool>> expression, JoinType join = JoinType.Inner);
-        IQueryable<T1, T2> GroupBy(string expression);
-        IQueryable<T1, T2> GroupBy<TResult>(Expression<Func<T1, T2, TResult>> expression);
-        IQueryable<T1, T2> Where(string expression, Action<Dictionary<string, object>> action = null);
-        IQueryable<T1, T2> Where(Expression<Func<T1, T2, bool>> expression);
-        IQueryable<T1, T2> OrderBy(string orderBy);
-        IQueryable<T1, T2> OrderBy<TResult>(Expression<Func<T1, T2, TResult>> expression);
-        IQueryable<T1, T2> OrderByDescending<TResult>(Expression<Func<T1, T2, TResult>> expression);
-        IQueryable<T1, T2> Having(string expression);
-        IQueryable<T1, T2> Having(Expression<Func<T1, T2, bool>> expression);
-        IQueryable<T1, T2> Distinct();
-        IQueryable<T1, T2> Select(string expression);
-        IQueryable<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression);
+        ISqlProvider<T1, T2> Join(string expression);
+        ISqlProvider<T1, T2> Join(Expression<Func<T1, T2, bool>> expression, JoinType join = JoinType.Inner);
+        ISqlProvider<T1, T2> GroupBy(string expression);
+        ISqlProvider<T1, T2> GroupBy<TResult>(Expression<Func<T1, T2, TResult>> expression);
+        ISqlProvider<T1, T2> Where(string expression, Action<Dictionary<string, object>> action = null);
+        ISqlProvider<T1, T2> Where(Expression<Func<T1, T2, bool>> expression);
+        ISqlProvider<T1, T2> OrderBy(string orderBy);
+        ISqlProvider<T1, T2> OrderBy<TResult>(Expression<Func<T1, T2, TResult>> expression);
+        ISqlProvider<T1, T2> OrderByDescending<TResult>(Expression<Func<T1, T2, TResult>> expression);
+        ISqlProvider<T1, T2> Having(string expression);
+        ISqlProvider<T1, T2> Having(Expression<Func<T1, T2, bool>> expression);
+        ISqlProvider<T1, T2> Distinct();
+        ISqlProvider<T1, T2> Select(string expression);
+        ISqlProvider<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression);
         SqlBuilder ToSql();
 
         IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null);
         Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null);
     }
-    public interface IQueryable<T1, T2, T3>
+    public interface ISqlProvider<T1, T2, T3> : IProvider
     {
-        IQueryable<T1, T2, T3> Join(string expression);
-        IQueryable<T1, T2, T3> Join<E1, E2>(Expression<Func<E1, E2, bool>> expression, JoinType join = JoinType.Inner) where E1 : class where E2 : class;
-        IQueryable<T1, T2, T3> GroupBy(string expression);
-        IQueryable<T1, T2, T3> GroupBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
-        IQueryable<T1, T2, T3> Where(string expression, Action<Dictionary<string, object>> action = null);
-        IQueryable<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> expression);
-        IQueryable<T1, T2, T3> OrderBy(string orderBy);
-        IQueryable<T1, T2, T3> OrderBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
-        IQueryable<T1, T2, T3> OrderByDescending<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
-        IQueryable<T1, T2, T3> Having(string expression);
-        IQueryable<T1, T2, T3> Having(Expression<Func<T1, T2, T3, bool>> expression);
-        IQueryable<T1, T2, T3> Distinct();
-        IQueryable<T1, T2, T3> Select(string expression);
-        IQueryable<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
+        ISqlProvider<T1, T2, T3> Join(string expression);
+        ISqlProvider<T1, T2, T3> Join<E1, E2>(Expression<Func<E1, E2, bool>> expression, JoinType join = JoinType.Inner) where E1 : class where E2 : class;
+        ISqlProvider<T1, T2, T3> GroupBy(string expression);
+        ISqlProvider<T1, T2, T3> GroupBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
+        ISqlProvider<T1, T2, T3> Where(string expression, Action<Dictionary<string, object>> action = null);
+        ISqlProvider<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> expression);
+        ISqlProvider<T1, T2, T3> OrderBy(string orderBy);
+        ISqlProvider<T1, T2, T3> OrderBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
+        ISqlProvider<T1, T2, T3> OrderByDescending<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
+        ISqlProvider<T1, T2, T3> Having(string expression);
+        ISqlProvider<T1, T2, T3> Having(Expression<Func<T1, T2, T3, bool>> expression);
+        ISqlProvider<T1, T2, T3> Distinct();
+        ISqlProvider<T1, T2, T3> Select(string expression);
+        ISqlProvider<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
         SqlBuilder ToSql();
 
         IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null);

@@ -14,6 +14,39 @@ using WangSql.Utils;
 
 namespace WangSql
 {
+    public class DbProviderOptions
+    {
+        public DbProviderOptions()
+        {
+        }
+
+        public DbProviderOptions(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql, bool debug)
+        {
+            Name = name;
+            ConnectionString = connectionString;
+            ConnectionType = connectionType;
+            UseParameterPrefixInSql = useParameterPrefixInSql;
+            UseParameterPrefixInParameter = useParameterPrefixInParameter;
+            ParameterPrefix = parameterPrefix;
+            UseQuotationInSql = useQuotationInSql;
+            Debug = debug;
+        }
+
+        public string Name { get; set; }
+        public string ConnectionString { get; set; }
+        public string ConnectionType { get; set; }
+        public bool UseParameterPrefixInSql { get; set; }
+        public bool UseParameterPrefixInParameter { get; set; }
+        public string ParameterPrefix { get; set; }
+        public bool UseQuotationInSql { get; set; }
+        public bool Debug { get; set; }
+    }
+
+    public class DbProviderContainer
+    {
+
+    }
+
     public class DbProvider
     {
         /// <summary>
@@ -22,19 +55,11 @@ namespace WangSql
         private static readonly ConcurrentDictionary<string, Type> ConnectionTypeCache = new ConcurrentDictionary<string, Type>();
         private static readonly int ConnectionTypeCacheSize = 100;
 
-        public DbProvider(
-            string name,
-            string connectionString,
-            string connectionType,
-            bool useParameterPrefixInSql,
-            bool useParameterPrefixInParameter,
-            string parameterPrefix,
-            bool useQuotationInSql,
-            bool debug)
+        public DbProvider(DbProviderOptions options)
         {
-            if (connectionString.Contains(","))
+            if (options.ConnectionString.Contains(","))
             {
-                var cs = connectionString.Split(',').Where(x => !string.IsNullOrEmpty(x?.Trim())).ToList();
+                var cs = options.ConnectionString.Split(',').Where(x => !string.IsNullOrEmpty(x?.Trim())).ToList();
                 if (cs.Count() > 1)
                 {
                     ConnectionString = cs[0];
@@ -48,17 +73,17 @@ namespace WangSql
             }
             else
             {
-                ConnectionString = connectionString;
+                ConnectionString = options.ConnectionString;
             }
 
-            Name = name;
+            Name = options.Name;
             //ConnectionString = connectionString;
-            ConnectionType = connectionType;
-            UseParameterPrefixInSql = useParameterPrefixInSql;
-            UseParameterPrefixInParameter = useParameterPrefixInParameter;
-            ParameterPrefix = parameterPrefix;
-            UseQuotationInSql = useQuotationInSql;
-            Debug = debug;
+            ConnectionType = options.ConnectionType;
+            UseParameterPrefixInSql = options.UseParameterPrefixInSql;
+            UseParameterPrefixInParameter = options.UseParameterPrefixInParameter;
+            ParameterPrefix = options.ParameterPrefix;
+            UseQuotationInSql = options.UseQuotationInSql;
+            Debug = options.Debug;
         }
 
 
@@ -166,9 +191,9 @@ namespace WangSql
         /// <param name="parameterPrefix"></param>
         /// <param name="useQuotationInSql"></param>
         /// <param name="debug"></param>
-        public static void Set(string name, string connectionString, string connectionType, bool useParameterPrefixInSql, bool useParameterPrefixInParameter, string parameterPrefix, bool useQuotationInSql, bool debug)
+        public static void Set(DbProviderOptions options)
         {
-            var dbProvider = new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug);
+            var dbProvider = new DbProvider(options);
             if (DbProviderConfigCache.Count > DbProviderConfigCacheSize)
             {
                 DbProviderConfigCache.Clear();
@@ -183,9 +208,9 @@ namespace WangSql
                     }
                 }
             }
-            DbProviderConfigCache[name] = dbProvider;
+            DbProviderConfigCache[options.Name] = dbProvider;
             //注入
-            AddDefaultService(name);
+            AddDefaultService(options.Name);
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序
@@ -194,28 +219,9 @@ namespace WangSql
         public static void Set(string config)
         {
             var dbProviders = GetConfigFile(config);
-            if (dbProviders.Count > 0)
+            foreach (var item in dbProviders)
             {
-                if (DbProviderConfigCache.Count + dbProviders.Count > DbProviderConfigCacheSize)
-                {
-                    DbProviderConfigCache.Clear();
-                }
-                foreach (var item in dbProviders)
-                {
-                    if (_dbProvider == null)
-                    {
-                        lock (_obj_lock)
-                        {
-                            if (_dbProvider == null)
-                            {
-                                _dbProvider = item;
-                            }
-                        }
-                    }
-                    DbProviderConfigCache[item.Name] = item;
-                    //注入
-                    AddDefaultService(item.Name);
-                }
+                Set(item);
             }
         }
         /// <summary>
@@ -223,7 +229,7 @@ namespace WangSql
         /// </summary>
         public static void Set()
         {
-            Set(null);
+            Set(string.Empty);
         }
         /// <summary>
         /// 根据驱动名称获取驱动对象
@@ -267,7 +273,7 @@ namespace WangSql
             IocManager.AddService<IPageProvider, DefaultPageProvider>(name);
             IocManager.AddService<IMigrateProvider, DefaultMigrateProvider>(name);
         }
-        private static IList<DbProvider> GetConfigFile(string config)
+        private static IList<DbProviderOptions> GetConfigFile(string config)
         {
             if (string.IsNullOrEmpty(config))
             {
@@ -296,7 +302,6 @@ namespace WangSql
                     config = Path.Combine(rootPath, "Web.config");
                 }
             }
-
             if (string.IsNullOrEmpty(config))
             {
                 throw new SqlException($"数据库配置文件不存在");
@@ -311,7 +316,6 @@ namespace WangSql
             {
                 throw new SqlException($"数据库配置文件格式{ext}不支持");
             }
-
             if (ext == ".config" || ext == ".xml")
             {
                 return GetXmlConfigFile(config);
@@ -320,10 +324,9 @@ namespace WangSql
             {
                 return GetJsonConfigFile(config);
             }
-
-            return new List<DbProvider>();
+            return new List<DbProviderOptions>();
         }
-        private static IList<DbProvider> GetXmlConfigFile(string config)
+        private static IList<DbProviderOptions> GetXmlConfigFile(string config)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(config);
@@ -338,7 +341,7 @@ namespace WangSql
             {
                 throw new SqlException($"配置文件{config}无database/dbProvider配置信息");
             }
-            IList<DbProvider> result = new List<DbProvider>();
+            IList<DbProviderOptions> result = new List<DbProviderOptions>();
             foreach (XmlNode item in providers)
             {
                 string name = item.SelectSingleNode("name")?.InnerText;
@@ -350,13 +353,13 @@ namespace WangSql
                 bool useQuotationInSql = StringToBool(item.SelectSingleNode("useQuotationInSql")?.InnerText);
                 bool debug = StringToBool(item.SelectSingleNode("debug")?.InnerText);
 
-                result.Add(new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
+                result.Add(new DbProviderOptions(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
             }
             return result;
         }
-        private static IList<DbProvider> GetJsonConfigFile(string config)
+        private static IList<DbProviderOptions> GetJsonConfigFile(string config)
         {
-            IList<DbProvider> result = new List<DbProvider>();
+            IList<DbProviderOptions> result = new List<DbProviderOptions>();
             var json = File.ReadAllText(config, Encoding.UTF8);
 
             //Database
@@ -390,7 +393,7 @@ namespace WangSql
                     bool useQuotationInSql = StringToBool(GetDictString(sod, "useQuotationInSql"));
                     bool debug = StringToBool(GetDictString(sod, "debug"));
 
-                    result.Add(new DbProvider(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
+                    result.Add(new DbProviderOptions(name, connectionString, connectionType, useParameterPrefixInSql, useParameterPrefixInParameter, parameterPrefix, useQuotationInSql, debug));
                 }
             }
 

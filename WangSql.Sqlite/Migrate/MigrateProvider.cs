@@ -8,9 +8,28 @@ using WangSql.Abstract.Utils;
 
 namespace WangSql.Sqlite.Migrate
 {
-    public class MigrateProvider : IMigrateProvider
+    public class MigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
-        public void Init(ISqlMapper sqlMapper)
+        #region constructor
+        public override void Init(ISqlExe sqlMapper)
+        {
+            _sqlMapper = sqlMapper;
+        }
+        #endregion
+
+        public override void CreateTable()
+        {
+            if (_sqlMapper is ISqlMapper _sqlMapper1)
+            {
+                CreateTable(_sqlMapper1);
+            }
+            else
+            {
+                CreateTable(_sqlMapper);
+            }
+        }
+
+        private void CreateTable(ISqlMapper sqlMapper)
         {
             if (sqlMapper != null)
             {
@@ -40,7 +59,7 @@ namespace WangSql.Sqlite.Migrate
             }
         }
 
-        public void Init(ISqlExe sqlMapper)
+        private void CreateTable(ISqlExe sqlMapper)
         {
             if (sqlMapper != null)
             {

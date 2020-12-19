@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WangSql.Test.Models
 {
-    [WangSql.Abstract.Attributes.Table(TableName = "tb_order")]
+    [WangSql.Abstract.Attributes.Table(TableName = "tb_order", AutoCreate = true)]
     public class Order
     {
         [WangSql.Abstract.Attributes.Column(IsPrimaryKey = true)]

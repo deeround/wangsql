@@ -4,9 +4,8 @@ using System.Text;
 
 namespace WangSql.Abstract.Migrate
 {
-    public interface IMigrateProvider
+    public interface IMigrateProvider : IProvider
     {
-        void Init(ISqlMapper sqlMapper);
-        void Init(ISqlExe sqlMapper);
+        void CreateTable();
     }
 }

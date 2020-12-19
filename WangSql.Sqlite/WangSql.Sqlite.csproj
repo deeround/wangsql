@@ -11,11 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WangSql\WangSql.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Linq\" />
+    <ProjectReference Include="..\WangSql\WangSql.csproj" />
   </ItemGroup>
 
 </Project>

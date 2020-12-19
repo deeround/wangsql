@@ -9,30 +9,30 @@ using WangSql.Abstract.Linq;
 using WangSql.Abstract.Models;
 using WangSql.Abstract.Utils;
 
-namespace WangSql.Sqlite.Linq
+namespace WangSql.Abstract.Linq
 {
     public class DefaultSqlProvider<T> : ISqlProvider<T> where T : class
     {
         #region constructor
-        public ISqlExe _dbcontext { get; }
-        public DefaultSqlProvider(ISqlExe dbcontext = null)
+        protected ISqlExe _sqlMapper { get; set; }
+        public void Init()
         {
-            _dbcontext = dbcontext;
             _param = new Dictionary<string, object>();
         }
-        public DefaultSqlProvider(Dictionary<string, object> param)
+        public void Init(ISqlExe sqlMapper)
         {
-            _param = param;
+            _sqlMapper = sqlMapper;
+            _param = new Dictionary<string, object>();
         }
         #endregion
 
         #region implement
-        public virtual ISqlProvider<T> With(string lockType)
+        public ISqlProvider<T> With(string lockType)
         {
             _lock.Append(lockType);
             return this;
         }
-        public virtual ISqlProvider<T> With(LockType lockType)
+        public ISqlProvider<T> With(LockType lockType)
         {
             if (lockType == LockType.FOR_UPADTE)
             {
@@ -44,7 +44,7 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public virtual ISqlProvider<T> Where(string expression, Action<Dictionary<string, object>> action = null)
+        public ISqlProvider<T> Where(string expression, Action<Dictionary<string, object>> action = null)
         {
             if (_whereBuffer.Length > 0)
             {
@@ -54,19 +54,19 @@ namespace WangSql.Sqlite.Linq
             _whereBuffer.Append(expression);
             return this;
         }
-        public virtual ISqlProvider<T> Where(Expression<Func<T, bool>> expression)
+        public ISqlProvider<T> Where(Expression<Func<T, bool>> expression)
         {
             Where(ExpressionUtil.BuildExpression(expression, _param), null);
             return this;
         }
-        public virtual ISqlProvider<T> Filter<TResult>(Expression<Func<T, TResult>> columns)
+        public ISqlProvider<T> Filter<TResult>(Expression<Func<T, TResult>> columns)
         {
             _filters.AddRange(ExpressionUtil.BuildColumns(columns, _param).Select(s => s.Value));
             return this;
         }
 
         //Select
-        public virtual ISqlProvider<T> Select(string expression)
+        public ISqlProvider<T> Select(string expression)
         {
             _commandType = CommandType.Select;
             if (expression != null)
@@ -75,7 +75,7 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public virtual ISqlProvider<T> Select<TResult>(Expression<Func<T, TResult>> columns)
+        public ISqlProvider<T> Select<TResult>(Expression<Func<T, TResult>> columns)
         {
             _commandType = CommandType.Select;
             var columstr = string.Join(",",
@@ -86,12 +86,12 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public virtual ISqlProvider<T> Distinct()
+        public ISqlProvider<T> Distinct()
         {
             _distinctBuffer.Append("DISTINCT");
             return this;
         }
-        public virtual ISqlProvider<T> GroupBy(string expression)
+        public ISqlProvider<T> GroupBy(string expression)
         {
             if (_groupBuffer.Length > 0)
             {
@@ -100,22 +100,22 @@ namespace WangSql.Sqlite.Linq
             _groupBuffer.Append(expression);
             return this;
         }
-        public virtual ISqlProvider<T> GroupBy<TResult>(Expression<Func<T, TResult>> expression)
+        public ISqlProvider<T> GroupBy<TResult>(Expression<Func<T, TResult>> expression)
         {
             GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
             return this;
         }
-        public virtual ISqlProvider<T> Having(string expression)
+        public ISqlProvider<T> Having(string expression)
         {
             _havingBuffer.Append(expression);
             return this;
         }
-        public virtual ISqlProvider<T> Having(Expression<Func<T, bool>> expression)
+        public ISqlProvider<T> Having(Expression<Func<T, bool>> expression)
         {
             Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
             return this;
         }
-        public virtual ISqlProvider<T> OrderBy(string orderBy)
+        public ISqlProvider<T> OrderBy(string orderBy)
         {
             if (_orderBuffer.Length > 0)
             {
@@ -124,19 +124,19 @@ namespace WangSql.Sqlite.Linq
             _orderBuffer.Append(orderBy);
             return this;
         }
-        public virtual ISqlProvider<T> OrderBy<TResult>(Expression<Func<T, TResult>> expression)
+        public ISqlProvider<T> OrderBy<TResult>(Expression<Func<T, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
-        public virtual ISqlProvider<T> OrderByDescending<TResult>(Expression<Func<T, TResult>> expression)
+        public ISqlProvider<T> OrderByDescending<TResult>(Expression<Func<T, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
 
         //Update(Filter和Select将失效)
-        public virtual ISqlProvider<T> Set(string expression, Action<Dictionary<string, object>> action = null)
+        public ISqlProvider<T> Set(string expression, Action<Dictionary<string, object>> action = null)
         {
             if (_setBuffer.Length > 0)
             {
@@ -146,7 +146,7 @@ namespace WangSql.Sqlite.Linq
             _setBuffer.AppendFormat(expression);
             return this;
         }
-        public virtual ISqlProvider<T> Set<TResult>(Expression<Func<T, TResult>> column, TResult value)
+        public ISqlProvider<T> Set<TResult>(Expression<Func<T, TResult>> column, TResult value)
         {
             if (_setBuffer.Length > 0)
             {
@@ -158,7 +158,7 @@ namespace WangSql.Sqlite.Linq
             _setBuffer.AppendFormat("{0} = #{1}#", columns.Value, key);
             return this;
         }
-        public virtual ISqlProvider<T> Set<TResult>(Expression<Func<T, TResult>> column, Expression<Func<T, TResult>> value)
+        public ISqlProvider<T> Set<TResult>(Expression<Func<T, TResult>> column, Expression<Func<T, TResult>> value)
         {
             if (_setBuffer.Length > 0)
             {
@@ -170,7 +170,7 @@ namespace WangSql.Sqlite.Linq
             return this;
         }
 
-        public virtual ISqlProvider<T> Update(T entity)
+        public ISqlProvider<T> Update(T entity)
         {
             _commandType = CommandType.Update;
             if (entity != null)
@@ -178,7 +178,14 @@ namespace WangSql.Sqlite.Linq
                     .ToList().ForEach(op => _param.Add(op.Name, op.GetValue(entity, null)));
             return this;
         }
-        public virtual ISqlProvider<T> Insert(T entity)
+        public ISqlProvider<T> Update(Dictionary<string, object> entity)
+        {
+            _commandType = CommandType.Update;
+            if (entity != null)
+                _param = entity;
+            return this;
+        }
+        public ISqlProvider<T> Insert(T entity)
         {
             _commandType = CommandType.Insert;
             if (entity != null)
@@ -186,12 +193,26 @@ namespace WangSql.Sqlite.Linq
                     .ToList().ForEach(op => _param.Add(op.Name, op.GetValue(entity, null)));
             return this;
         }
-        public virtual ISqlProvider<T> Delete(T entity)
+        public ISqlProvider<T> Insert(Dictionary<string, object> entity)
+        {
+            _commandType = CommandType.Insert;
+            if (entity != null)
+                _param = entity;
+            return this;
+        }
+        public ISqlProvider<T> Delete(T entity)
         {
             _commandType = CommandType.Delete;
             if (entity != null)
                 entity.GetType().GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public)
                     .ToList().ForEach(op => _param.Add(op.Name, op.GetValue(entity, null)));
+            return this;
+        }
+        public ISqlProvider<T> Delete(Dictionary<string, object> entity)
+        {
+            _commandType = CommandType.Delete;
+            if (entity != null)
+                _param = entity;
             return this;
         }
 
@@ -223,19 +244,19 @@ namespace WangSql.Sqlite.Linq
         }
         public int SaveChanges(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.Execute(sql.Sql, sql.Parameter, timeout);
+                return _sqlMapper.Execute(sql.Sql, sql.Parameter, timeout);
             }
             return 0;
         }
         public async Task<int> SaveChangesAsync(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.ExecuteAsync(sql.Sql, sql.Parameter, timeout);
+                return await _sqlMapper.ExecuteAsync(sql.Sql, sql.Parameter, timeout);
             }
             return 0;
         }
@@ -243,74 +264,74 @@ namespace WangSql.Sqlite.Linq
         #region Select
         public T Single(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.QueryFirstOrDefault<T>(sql.Sql, sql.Parameter, timeout);
+                return _sqlMapper.QueryFirstOrDefault<T>(sql.Sql, sql.Parameter, timeout);
             }
             return default(T);
         }
         public async Task<T> SingleAsync(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryFirstOrDefaultAsync<T>(sql.Sql, sql.Parameter, timeout);
+                return await _sqlMapper.QueryFirstOrDefaultAsync<T>(sql.Sql, sql.Parameter, timeout);
             }
             return default(T);
         }
         public TResult Single<TResult>(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.QueryFirstOrDefault<TResult>(sql.Sql, sql.Parameter, timeout);
+                return _sqlMapper.QueryFirstOrDefault<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return default(TResult);
         }
         public async Task<TResult> SingleAsync<TResult>(int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryFirstOrDefaultAsync<TResult>(sql.Sql, sql.Parameter, timeout);
+                return await _sqlMapper.QueryFirstOrDefaultAsync<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return default(TResult);
         }
 
         public IEnumerable<T> ToList(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.Query<T>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<T>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<T>();
         }
         public async Task<IEnumerable<T>> ToListAsync(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryAsync<T>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<T>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<T>();
         }
         public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<TResult>();
         }
         public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<TResult>();
         }
@@ -429,28 +450,28 @@ namespace WangSql.Sqlite.Linq
 
 
 
-    public class DefaultSqlProvider<T1, T2> : IQueryable<T1, T2> where T1 : class where T2 : class
+    public class DefaultSqlProvider<T1, T2> : ISqlProvider<T1, T2> where T1 : class where T2 : class
     {
         #region constructor
-        public ISqlExe _dbcontext { get; }
-        public DefaultSqlProvider(ISqlExe dbcontext = null)
+        protected ISqlExe _sqlMapper { get; set; }
+        public void Init()
         {
-            _dbcontext = dbcontext;
             _param = new Dictionary<string, object>();
         }
-        public DefaultSqlProvider(Dictionary<string, object> param)
+        public void Init(ISqlExe sqlMapper)
         {
-            _param = param;
+            _sqlMapper = sqlMapper;
+            _param = new Dictionary<string, object>();
         }
         #endregion
 
         #region implement
-        public IQueryable<T1, T2> Distinct()
+        public ISqlProvider<T1, T2> Distinct()
         {
             _distinctBuffer.Append("DISTINCT");
             return this;
         }
-        public IQueryable<T1, T2> GroupBy(string expression)
+        public ISqlProvider<T1, T2> GroupBy(string expression)
         {
             if (_groupBuffer.Length > 0)
             {
@@ -459,22 +480,22 @@ namespace WangSql.Sqlite.Linq
             _groupBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2> GroupBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
+        public ISqlProvider<T1, T2> GroupBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
             GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
-        public IQueryable<T1, T2> Having(string expression)
+        public ISqlProvider<T1, T2> Having(string expression)
         {
             _havingBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2> Having(Expression<Func<T1, T2, bool>> expression)
+        public ISqlProvider<T1, T2> Having(Expression<Func<T1, T2, bool>> expression)
         {
             Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
-        public IQueryable<T1, T2> OrderBy(string orderBy)
+        public ISqlProvider<T1, T2> OrderBy(string orderBy)
         {
             if (_orderBuffer.Length > 0)
             {
@@ -483,17 +504,17 @@ namespace WangSql.Sqlite.Linq
             _orderBuffer.Append(orderBy);
             return this;
         }
-        public IQueryable<T1, T2> OrderBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
+        public ISqlProvider<T1, T2> OrderBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
-        public IQueryable<T1, T2> OrderByDescending<TResult>(Expression<Func<T1, T2, TResult>> expression)
+        public ISqlProvider<T1, T2> OrderByDescending<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
-        public IQueryable<T1, T2> Where(string expression, Action<Dictionary<string, object>> action = null)
+        public ISqlProvider<T1, T2> Where(string expression, Action<Dictionary<string, object>> action = null)
         {
             if (_whereBuffer.Length > 0)
             {
@@ -503,12 +524,12 @@ namespace WangSql.Sqlite.Linq
             _whereBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2> Where(Expression<Func<T1, T2, bool>> expression)
+        public ISqlProvider<T1, T2> Where(Expression<Func<T1, T2, bool>> expression)
         {
             Where(ExpressionUtil.BuildExpression(expression, _param, false), null);
             return this;
         }
-        public IQueryable<T1, T2> Join(string expression)
+        public ISqlProvider<T1, T2> Join(string expression)
         {
             if (_join.Length > 0)
             {
@@ -517,7 +538,7 @@ namespace WangSql.Sqlite.Linq
             _join.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2> Join(Expression<Func<T1, T2, bool>> expression, JoinType join = JoinType.Inner)
+        public ISqlProvider<T1, T2> Join(Expression<Func<T1, T2, bool>> expression, JoinType join = JoinType.Inner)
         {
             var onExpression = ExpressionUtil.BuildExpression(expression, _param, false);
             var table1Name = EntityUtil.GetMap<T1>().TableName;
@@ -526,7 +547,7 @@ namespace WangSql.Sqlite.Linq
             Join(string.Format("{0} {1} {2} ON {3}", table1Name, joinType, table2Name, onExpression));
             return this;
         }
-        public IQueryable<T1, T2> Select(string expression)
+        public ISqlProvider<T1, T2> Select(string expression)
         {
             if (expression != null)
             {
@@ -534,7 +555,7 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public IQueryable<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression)
+        public ISqlProvider<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
             var columstr = string.Join(",",
                 ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
@@ -555,19 +576,19 @@ namespace WangSql.Sqlite.Linq
 
         public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<TResult>();
         }
         public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<TResult>();
         }
@@ -620,28 +641,28 @@ namespace WangSql.Sqlite.Linq
         }
         #endregion
     }
-    public class DefaultSqlProvider<T1, T2, T3> : IQueryable<T1, T2, T3> where T1 : class where T2 : class where T3 : class
+    public class DefaultSqlProvider<T1, T2, T3> : ISqlProvider<T1, T2, T3> where T1 : class where T2 : class where T3 : class
     {
         #region constructor
-        public ISqlExe _dbcontext { get; }
-        public DefaultSqlProvider(ISqlExe dbcontext = null)
+        protected ISqlExe _sqlMapper { get; set; }
+        public void Init()
         {
-            _dbcontext = dbcontext;
             _param = new Dictionary<string, object>();
         }
-        public DefaultSqlProvider(Dictionary<string, object> param)
+        public void Init(ISqlExe sqlMapper)
         {
-            _param = param;
+            _sqlMapper = sqlMapper;
+            _param = new Dictionary<string, object>();
         }
         #endregion
 
         #region implement
-        public IQueryable<T1, T2, T3> Distinct()
+        public ISqlProvider<T1, T2, T3> Distinct()
         {
             _distinctBuffer.Append("DISTINCT");
             return this;
         }
-        public IQueryable<T1, T2, T3> GroupBy(string expression)
+        public ISqlProvider<T1, T2, T3> GroupBy(string expression)
         {
             if (_groupBuffer.Length > 0)
             {
@@ -650,22 +671,22 @@ namespace WangSql.Sqlite.Linq
             _groupBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2, T3> GroupBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
+        public ISqlProvider<T1, T2, T3> GroupBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
             GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
-        public IQueryable<T1, T2, T3> Having(string expression)
+        public ISqlProvider<T1, T2, T3> Having(string expression)
         {
             _havingBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2, T3> Having(Expression<Func<T1, T2, T3, bool>> expression)
+        public ISqlProvider<T1, T2, T3> Having(Expression<Func<T1, T2, T3, bool>> expression)
         {
             Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
-        public IQueryable<T1, T2, T3> OrderBy(string orderBy)
+        public ISqlProvider<T1, T2, T3> OrderBy(string orderBy)
         {
             if (_orderBuffer.Length > 0)
             {
@@ -674,17 +695,17 @@ namespace WangSql.Sqlite.Linq
             _orderBuffer.Append(orderBy);
             return this;
         }
-        public IQueryable<T1, T2, T3> OrderBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
+        public ISqlProvider<T1, T2, T3> OrderBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
-        public IQueryable<T1, T2, T3> OrderByDescending<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
+        public ISqlProvider<T1, T2, T3> OrderByDescending<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
             OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
-        public IQueryable<T1, T2, T3> Where(string expression, Action<Dictionary<string, object>> action = null)
+        public ISqlProvider<T1, T2, T3> Where(string expression, Action<Dictionary<string, object>> action = null)
         {
             if (_whereBuffer.Length > 0)
             {
@@ -694,12 +715,12 @@ namespace WangSql.Sqlite.Linq
             _whereBuffer.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> expression)
+        public ISqlProvider<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> expression)
         {
             Where(ExpressionUtil.BuildExpression(expression, _param, false), null);
             return this;
         }
-        public IQueryable<T1, T2, T3> Join(string expression)
+        public ISqlProvider<T1, T2, T3> Join(string expression)
         {
             if (_join.Length > 0)
             {
@@ -708,7 +729,7 @@ namespace WangSql.Sqlite.Linq
             _join.Append(expression);
             return this;
         }
-        public IQueryable<T1, T2, T3> Join<E1, E2>(Expression<Func<E1, E2, bool>> expression, JoinType join = JoinType.Inner) where E1 : class where E2 : class
+        public ISqlProvider<T1, T2, T3> Join<E1, E2>(Expression<Func<E1, E2, bool>> expression, JoinType join = JoinType.Inner) where E1 : class where E2 : class
         {
             var onExpression = ExpressionUtil.BuildExpression(expression, _param, false);
             var table1Name = EntityUtil.GetMap<E1>().TableName;
@@ -732,7 +753,7 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public IQueryable<T1, T2, T3> Select(string expression)
+        public ISqlProvider<T1, T2, T3> Select(string expression)
         {
             if (expression != null)
             {
@@ -740,7 +761,7 @@ namespace WangSql.Sqlite.Linq
             }
             return this;
         }
-        public IQueryable<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
+        public ISqlProvider<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
             var columstr = string.Join(",",
                 ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
@@ -761,19 +782,19 @@ namespace WangSql.Sqlite.Linq
 
         public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _dbcontext.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
             }
             return new List<TResult>();
         }
         public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
         {
-            if (_dbcontext != null)
+            if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _dbcontext.QueryAsync<TResult>(sql.Sql, sql.Parameter, timeout);
+                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
