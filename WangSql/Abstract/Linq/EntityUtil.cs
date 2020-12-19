@@ -30,28 +30,6 @@ namespace WangSql.Abstract.Linq
             return ClearMap(type);
         }
 
-        public static void SetMaps(IList<Type> types)
-        {
-            #region 初始化
-            var assemblyTypes = types;
-
-            //特性方式
-            var attrClass = assemblyTypes.Where(op => op.IsClass && op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
-            foreach (var type in attrClass)
-            {
-                var map = GetMap(type);
-                SetMap(type, map);
-            }
-
-            //接口方式
-            var flutClass = assemblyTypes.Where(x => x.IsClass && typeof(IDataConfig).IsAssignableFrom(x)).ToList();
-            foreach (var type in flutClass)
-            {
-                Activator.CreateInstance(type);
-            }
-            #endregion
-        }
-
         public static TableInfo SetMap<T>(TableInfo value) where T : class
         {
             var type = typeof(T);
@@ -83,15 +61,40 @@ namespace WangSql.Abstract.Linq
             return result;
         }
 
-        public static IList<TableInfo> GetMaps(string providerName)
-        {
-            return TableInfoCache.Values.Where(x => (string.IsNullOrEmpty(x.ProviderName) || x.ProviderName == providerName)).ToList();
-        }
-
         public static ColumnInfo GetColumn(Type type, Func<ColumnInfo, bool> func)
         {
             return GetMap(type).Columns.Find(f => func(f));
         }
+
+
+        #region 批量注入（数据迁移）
+        public static void SetMaps(string providerName, IList<Type> types)
+        {
+            #region 初始化
+            var assemblyTypes = types;
+
+            //特性方式
+            var attrClass = assemblyTypes.Where(op => op.IsClass && op.GetCustomAttributes(typeof(TableAttribute), false).Any()).ToList();
+            foreach (var type in attrClass)
+            {
+                var map = GetMap(type);
+                SetMap(type, map);
+            }
+
+            //接口方式
+            var flutClass = assemblyTypes.Where(x => x.IsClass && typeof(IDataConfig).IsAssignableFrom(x)).ToList();
+            foreach (var type in flutClass)
+            {
+                Activator.CreateInstance(type);
+            }
+            #endregion
+        }
+
+        public static IList<TableInfo> GetMaps(string providerName)
+        {
+            return TableInfoCache.Values.Where(x => (string.IsNullOrEmpty(x.ProviderName) || x.ProviderName == providerName)).ToList();
+        }
+        #endregion
 
 
 

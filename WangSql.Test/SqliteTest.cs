@@ -11,7 +11,7 @@ namespace WangSql.Test
         public static void Test()
         {
             SqliteProviderManager.Init("Data Source=wangsql.db;");
-            EntityUtil.SetMaps(new Type[] { typeof(Models.User), typeof(Models.Order) });
+            EntityUtil.SetMaps(DbProviderManager.Get().Name, new Type[] { typeof(Models.User), typeof(Models.Order) });
 
             var session = new SqlMapper();
             var sqlBuilder = new SqlBuilder();

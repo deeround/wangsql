@@ -39,7 +39,7 @@ namespace WangSql.Sqlite
             //
             if (options.TableMaps != null && options.TableMaps.Count > 0)
             {
-                EntityUtil.SetMaps(options.TableMaps);
+                EntityUtil.SetMaps(options.Name, options.TableMaps);
             }
             if (options.AutoCreateTable)
             {
