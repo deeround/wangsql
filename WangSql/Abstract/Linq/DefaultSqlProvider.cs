@@ -5,9 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using WangSql.Abstract.Linq;
 using WangSql.Abstract.Models;
-using WangSql.Abstract.Utils;
 
 namespace WangSql.Abstract.Linq
 {

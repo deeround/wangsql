@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WangSql.Abstract.Linq;
 using WangSql.Abstract.Migrate;
 using WangSql.Abstract.Models;
-using WangSql.Abstract.Utils;
 
 namespace WangSql.Sqlite.Migrate
 {
-    public class MigrateProvider : DefaultMigrateProvider, IMigrateProvider
+    public class SqliteMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
         #region constructor
         public override void Init(ISqlExe sqlMapper)
@@ -33,7 +33,7 @@ namespace WangSql.Sqlite.Migrate
         {
             if (sqlMapper != null)
             {
-                var tables = EntityUtil.GetMaps().Where(x => x.AutoCreate).ToList();
+                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).Where(x => x.AutoCreate).ToList();
 
                 for (int i = 0; i < tables.Count; i++)
                 {
@@ -63,7 +63,7 @@ namespace WangSql.Sqlite.Migrate
         {
             if (sqlMapper != null)
             {
-                var tables = EntityUtil.GetMaps().Where(x => x.AutoCreate).ToList();
+                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).Where(x => x.AutoCreate).ToList();
 
                 for (int i = 0; i < tables.Count; i++)
                 {

@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using WangSql.Abstract.Linq;
 using WangSql.Abstract.Migrate;
 using WangSql.Abstract.Paged;
-using WangSql.DependencyInjection;
 
 namespace WangSql
 {
@@ -11,35 +10,35 @@ namespace WangSql
     {
         public static IMigrateProvider Migrate(this ISqlExe sqlMapper)
         {
-            var provider = IocManager.GetService<IMigrateProvider>(sqlMapper.SqlFactory.DbProvider.Name);
+            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IMigrateProvider>();
             provider.Init(sqlMapper);
             return provider;
         }
 
         public static IEnumerable<T> QueryPage<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, int? timeout = null)
         {
-            var provider = IocManager.GetService<IPageProvider>(sqlMapper.SqlFactory.DbProvider.Name);
+            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
             provider.Init(sqlMapper);
             return provider.QueryPage<T>(sql, param, pageIndex, pageSize, timeout);
         }
 
         public static IEnumerable<T> QueryPage<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, bool buffered = true, int? timeout = null)
         {
-            var provider = IocManager.GetService<IPageProvider>(sqlMapper.SqlFactory.DbProvider.Name);
+            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
             provider.Init(sqlMapper);
             return provider.QueryPage<T>(sql, param, pageIndex, pageSize, buffered, timeout);
         }
 
         public static Task<IEnumerable<T>> QueryPageAsync<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, int? timeout = null)
         {
-            var provider = IocManager.GetService<IPageProvider>(sqlMapper.SqlFactory.DbProvider.Name);
+            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
             provider.Init(sqlMapper);
             return provider.QueryPageAsync<T>(sql, param, pageIndex, pageSize, timeout);
         }
 
         public static Task<IEnumerable<T>> QueryPageAsync<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, bool buffered = true, int? timeout = null)
         {
-            var provider = IocManager.GetService<IPageProvider>(sqlMapper.SqlFactory.DbProvider.Name);
+            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
             provider.Init(sqlMapper);
             return provider.QueryPageAsync<T>(sql, param, pageIndex, pageSize, buffered, timeout);
         }

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using WangSql.Abstract.Linq;
 using WangSql.Abstract.Migrate;
 using WangSql.Abstract.Paged;
-using WangSql.DependencyInjection;
 using WangSql.Utils;
 
 namespace WangSql
@@ -42,19 +42,8 @@ namespace WangSql
         public bool Debug { get; set; }
     }
 
-    public class DbProviderContainer
-    {
-
-    }
-
     public class DbProvider
     {
-        /// <summary>
-        /// 使用静态变量注意内存溢出
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, Type> ConnectionTypeCache = new ConcurrentDictionary<string, Type>();
-        private static readonly int ConnectionTypeCacheSize = 100;
-
         public DbProvider(DbProviderOptions options)
         {
             if (options.ConnectionString.Contains(","))
@@ -84,9 +73,11 @@ namespace WangSql
             ParameterPrefix = options.ParameterPrefix;
             UseQuotationInSql = options.UseQuotationInSql;
             Debug = options.Debug;
+
+            //注入默认服务
+            AddService<IMigrateProvider, DefaultMigrateProvider>();
+            AddService<IPageProvider, DefaultPageProvider>();
         }
-
-
 
         public string ConnectionString { get; }
         public string[] ConnectionReadString { get; }
@@ -98,10 +89,21 @@ namespace WangSql
         public bool UseQuotationInSql { get; }
         public bool Debug { get; }
 
+        private Type _connectionType;
         public DbConnection CreateConnection(bool isReadDb)
         {
-            var type = GetCacheType();
-            var conn = (DbConnection)Activator.CreateInstance(type);
+            if (_connectionType == null)
+            {
+                try
+                {
+                    _connectionType = Type.GetType(ConnectionType);
+                }
+                catch (Exception ex)
+                {
+                    throw new SqlException(ConnectionType + "加载失败：" + ex.Message);
+                }
+            }
+            var conn = (DbConnection)Activator.CreateInstance(_connectionType);
             string connStr = ConnectionString;
             if (isReadDb)
             {
@@ -139,32 +141,27 @@ namespace WangSql
             return UseQuotationInSql ? "\"" + parameterName + "\"" : parameterName;
         }
 
-
-
-        private Type GetCacheType()
+        #region 扩展注入服务方法
+        public void AddService<TService, TImplementation>() where TImplementation : TService
         {
-            if (ConnectionTypeCache.ContainsKey(Name))
-            {
-                return ConnectionTypeCache[Name];
-            }
-
-            Type type;
-            try
-            {
-                type = Type.GetType(ConnectionType);
-            }
-            catch (Exception ex)
-            {
-                throw new SqlException(ConnectionType + "加载失败：" + ex.Message);
-            }
-
-            if (ConnectionTypeCache.Count > ConnectionTypeCacheSize)
-            {
-                ConnectionTypeCache.Clear();
-            }
-            ConnectionTypeCache[Name] = type ?? throw new SqlException(ConnectionType + "加载失败");
-            return type;
+            ServiceUtil.AddService<TService, TImplementation>(this.Name);
         }
+
+        public void AddService(Type serviceType, Type implementationType)
+        {
+            ServiceUtil.AddService(this.Name, serviceType, implementationType);
+        }
+
+        public T GetService<T>()
+        {
+            return ServiceUtil.GetService<T>(this.Name);
+        }
+
+        public object GetService(Type serviceType)
+        {
+            return ServiceUtil.GetService(this.Name, serviceType);
+        }
+        #endregion
     }
 
     public class DbProviderManager
@@ -209,8 +206,6 @@ namespace WangSql
                 }
             }
             DbProviderConfigCache[options.Name] = dbProvider;
-            //注入
-            AddDefaultService(options.Name);
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序
@@ -267,12 +262,6 @@ namespace WangSql
             throw new SqlException($"未找到数据库的配置信息");
         }
 
-        private static void AddDefaultService(string name)
-        {
-            //注入
-            IocManager.AddService<IPageProvider, DefaultPageProvider>(name);
-            IocManager.AddService<IMigrateProvider, DefaultMigrateProvider>(name);
-        }
         private static IList<DbProviderOptions> GetConfigFile(string config)
         {
             if (string.IsNullOrEmpty(config))

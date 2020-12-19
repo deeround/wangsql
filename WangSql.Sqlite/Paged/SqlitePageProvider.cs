@@ -5,7 +5,7 @@ using WangSql.Abstract.Paged;
 
 namespace WangSql.Sqlite.Paged
 {
-    public class PageProvider : DefaultPageProvider, IPageProvider
+    public class SqlitePageProvider : DefaultPageProvider, IPageProvider
     {
         public override IEnumerable<T> QueryPage<T>(string sql, object param, int pageIndex, int pageSize, int? timeout = null)
         {

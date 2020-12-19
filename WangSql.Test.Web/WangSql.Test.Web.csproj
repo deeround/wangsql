@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="4.0.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.60" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WangSql.Sqlite\WangSql.Sqlite.csproj" />
+    <ProjectReference Include="..\WangSql\WangSql.csproj" />
+  </ItemGroup>
+
+</Project>

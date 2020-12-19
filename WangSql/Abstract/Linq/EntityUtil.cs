@@ -7,7 +7,7 @@ using System.Text;
 using WangSql.Abstract.Attributes;
 using WangSql.Abstract.Models;
 
-namespace WangSql.Abstract.Utils
+namespace WangSql.Abstract.Linq
 {
     public interface IDataConfig { }
 
@@ -83,9 +83,9 @@ namespace WangSql.Abstract.Utils
             return result;
         }
 
-        public static IList<TableInfo> GetMaps()
+        public static IList<TableInfo> GetMaps(string providerName)
         {
-            return TableInfoCache.Values.ToList();
+            return TableInfoCache.Values.Where(x => (string.IsNullOrEmpty(x.ProviderName) || x.ProviderName == providerName)).ToList();
         }
 
         public static ColumnInfo GetColumn(Type type, Func<ColumnInfo, bool> func)
@@ -134,10 +134,26 @@ namespace WangSql.Abstract.Utils
             {
                 table = new TableAttribute
                 {
-                    TableName = type.Name
+                    TableName = type.Name,
+                    AutoCreate = false
                 };
             }
-            result.TableName = string.IsNullOrEmpty(table.TableName) ? type.Name : table.TableName;
+            if (string.IsNullOrEmpty(table.ProviderName) || table.AutoCreate == false)
+            {
+                var provider = (ProviderAttribute)type.GetCustomAttributes(typeof(ProviderAttribute), true).FirstOrDefault();
+                if (provider != null)//没有特性
+                {
+                    if (string.IsNullOrEmpty(table.ProviderName))
+                    {
+                        table.ProviderName = provider.ProviderName;
+                    }
+                    if (table.AutoCreate == false)
+                    {
+                        table.AutoCreate = provider.AutoCreate;
+                    }
+                }
+            }
+            result.TableName = table.TableName;
             result.ClassName = type.Name;
             result.ClassType = type;
             result.Comment = table.Comment;
@@ -175,16 +191,6 @@ namespace WangSql.Abstract.Utils
                 });
             }
 
-            ////如果没有设置主键，则将第一个含有ID的字段当做主键
-            //if (!result.Columns.Any(op => op.IsPrimaryKey))
-            //{
-            //    var property = result.Columns.FirstOrDefault(op => op.Name.ToUpper().Contains("ID"));
-            //    if (property != null)
-            //    {
-            //        property.IsPrimaryKey = true;
-            //    }
-            //}
-
             return result;
         }
 
@@ -204,7 +210,7 @@ namespace WangSql.Abstract.Utils
         /// <summary>
         ///     设置表
         /// </summary>
-        public TableMapTable<T> ToTable(string name = null, string comment = null, bool autoCreate = false)
+        public TableMapTable<T> ToTable(string name = null, string comment = null, bool autoCreate = false, string providerName = null)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -214,6 +220,7 @@ namespace WangSql.Abstract.Utils
             map.TableName = name;
             map.Comment = comment;
             map.AutoCreate = autoCreate;
+            map.ProviderName = providerName;
             EntityUtil.SetMap<T>(map);
             return this;
         }

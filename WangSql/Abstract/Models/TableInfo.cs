@@ -19,6 +19,10 @@ namespace WangSql.Abstract.Models
         /// </summary>
         public string TableName { get; set; }
         /// <summary>
+        /// 驱动名
+        /// </summary>
+        public string ProviderName { get; set; }
+        /// <summary>
         /// 注释
         /// </summary>
         public string Comment { get; set; }

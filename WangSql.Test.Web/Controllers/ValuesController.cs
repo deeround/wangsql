@@ -1,18 +1,23 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using WangSql.Abstract.Linq;
-using WangSql.Sqlite;
-using WangSql.Test.Models;
+using WangSql.Test.Web.Models;
 
-namespace WangSql.Test
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace WangSql.Test.Web.Controllers
 {
-    public class SqliteTest
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ValuesController : ControllerBase
     {
-        public static void Test()
+        // GET: api/<ValuesController>
+        [HttpGet]
+        public IEnumerable<string> Get()
         {
-            SqliteProviderManager.Init("Data Source=wangsql.db;");
-            EntityUtil.SetMaps(new Type[] { typeof(Models.User), typeof(Models.Order) });
-
             var session = new SqlMapper();
             var sqlBuilder = new SqlBuilder();
 
@@ -61,7 +66,32 @@ namespace WangSql.Test
                 .Where((a, b) => a.UserId == user.Id || a.UserId == userId)
                 .ToList<Dictionary<string, object>>();
 
+            return new string[] { "value1", "value2" };
+        }
 
+        // GET api/<ValuesController>/5
+        [HttpGet("{id}")]
+        public string Get(int id)
+        {
+            return "value";
+        }
+
+        // POST api/<ValuesController>
+        [HttpPost]
+        public void Post([FromBody] string value)
+        {
+        }
+
+        // PUT api/<ValuesController>/5
+        [HttpPut("{id}")]
+        public void Put(int id, [FromBody] string value)
+        {
+        }
+
+        // DELETE api/<ValuesController>/5
+        [HttpDelete("{id}")]
+        public void Delete(int id)
+        {
         }
     }
 }

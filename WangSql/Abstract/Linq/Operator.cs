@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Linq.Expressions;
 
-namespace WangSql.Abstract.Utils
+namespace WangSql.Abstract.Linq
 {
     public static class Operator
     {

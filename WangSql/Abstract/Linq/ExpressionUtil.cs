@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using WangSql.Abstract.Attributes;
 
-namespace WangSql.Abstract.Utils
+namespace WangSql.Abstract.Linq
 {
     public class ExpressionUtil : ExpressionVisitor
     {

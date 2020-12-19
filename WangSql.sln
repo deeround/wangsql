@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WangSql", "WangSql\WangSql.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WangSql.Test", "WangSql.Test\WangSql.Test.csproj", "{2C4306AD-6C8F-4CDA-806E-2CEAD5FB8B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WangSql.Sqlite", "WangSql.Sqlite\WangSql.Sqlite.csproj", "{64C94904-07B4-48BE-BFA8-D545A742698C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WangSql.Sqlite", "WangSql.Sqlite\WangSql.Sqlite.csproj", "{64C94904-07B4-48BE-BFA8-D545A742698C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WangSql.Test.Web", "WangSql.Test.Web\WangSql.Test.Web.csproj", "{B2264D8C-20EC-4512-8E75-BC8537593FD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{64C94904-07B4-48BE-BFA8-D545A742698C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64C94904-07B4-48BE-BFA8-D545A742698C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64C94904-07B4-48BE-BFA8-D545A742698C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2264D8C-20EC-4512-8E75-BC8537593FD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2264D8C-20EC-4512-8E75-BC8537593FD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2264D8C-20EC-4512-8E75-BC8537593FD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2264D8C-20EC-4512-8E75-BC8537593FD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

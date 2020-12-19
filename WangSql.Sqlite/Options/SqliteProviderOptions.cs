@@ -6,7 +6,10 @@ namespace WangSql.Sqlite.Options
 {
     public class SqliteProviderOptions : DbProviderOptions
     {
-        public SqliteProviderOptions()
+        public bool AutoCreateTable { get; set; }
+        public IList<Type> TableMaps { get; set; }
+
+        public SqliteProviderOptions() : base()
         {
         }
 
