@@ -68,7 +68,7 @@ namespace WangSql.Abstract.Linq
 
 
         #region 批量注入（数据迁移）
-        public static void SetMaps(string providerName, IList<Type> types)
+        public static void SetMaps(IList<Type> types, string providerName = null)
         {
             #region 初始化
             var assemblyTypes = types;
@@ -78,6 +78,10 @@ namespace WangSql.Abstract.Linq
             foreach (var type in attrClass)
             {
                 var map = GetMap(type);
+                if (string.IsNullOrEmpty(map.ProviderName))
+                {
+                    map.ProviderName = providerName;
+                }
                 SetMap(type, map);
             }
 
@@ -90,7 +94,7 @@ namespace WangSql.Abstract.Linq
             #endregion
         }
 
-        public static IList<TableInfo> GetMaps(string providerName)
+        public static IList<TableInfo> GetMaps(string providerName = null)
         {
             return TableInfoCache.Values.Where(x => (string.IsNullOrEmpty(x.ProviderName) || x.ProviderName == providerName)).ToList();
         }
@@ -137,30 +141,22 @@ namespace WangSql.Abstract.Linq
             {
                 table = new TableAttribute
                 {
-                    TableName = type.Name,
-                    AutoCreate = false
+                    TableName = type.Name
                 };
             }
-            if (string.IsNullOrEmpty(table.ProviderName) || table.AutoCreate == false)
+            if (string.IsNullOrEmpty(table.ProviderName))
             {
                 var provider = (ProviderAttribute)type.GetCustomAttributes(typeof(ProviderAttribute), true).FirstOrDefault();
                 if (provider != null)//没有特性
                 {
-                    if (string.IsNullOrEmpty(table.ProviderName))
-                    {
-                        table.ProviderName = provider.ProviderName;
-                    }
-                    if (table.AutoCreate == false)
-                    {
-                        table.AutoCreate = provider.AutoCreate;
-                    }
+                    table.ProviderName = provider.ProviderName;
                 }
             }
             result.TableName = table.TableName;
             result.ClassName = type.Name;
             result.ClassType = type;
             result.Comment = table.Comment;
-            result.AutoCreate = table.AutoCreate;
+            result.IsView = table.IsView;
             foreach (var item in type.GetProperties())
             {
                 var ignoreColumn = (IgnoreColumnAttribute)item.GetCustomAttributes(typeof(IgnoreColumnAttribute), false).FirstOrDefault();
@@ -213,7 +209,7 @@ namespace WangSql.Abstract.Linq
         /// <summary>
         ///     设置表
         /// </summary>
-        public TableMapTable<T> ToTable(string name = null, string comment = null, bool autoCreate = false, string providerName = null)
+        public TableMapTable<T> ToTable(string name = null, string comment = null, string providerName = null, bool isView = false)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -222,8 +218,8 @@ namespace WangSql.Abstract.Linq
             var map = EntityUtil.GetMap<T>();
             map.TableName = name;
             map.Comment = comment;
-            map.AutoCreate = autoCreate;
             map.ProviderName = providerName;
+            map.IsView = isView;
             EntityUtil.SetMap<T>(map);
             return this;
         }

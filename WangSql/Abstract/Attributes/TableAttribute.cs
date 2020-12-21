@@ -30,8 +30,8 @@ namespace WangSql.Abstract.Attributes
         /// </summary>
         public string Comment { get; set; }
         /// <summary>
-        /// 是否自动创建表
+        /// 是否是视图
         /// </summary>
-        public bool AutoCreate { get; set; }
+        public bool IsView { get; set; }
     }
 }

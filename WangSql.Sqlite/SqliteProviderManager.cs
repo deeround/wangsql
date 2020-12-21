@@ -18,6 +18,7 @@ namespace WangSql.Sqlite
         private const string _parameterPrefix = "@";
         private const bool _useQuotationInSql = false;
         private const bool _debug = false;
+        private const bool _autoCreateTable = false;
 
         public static void Init(string connectionString)
         {
@@ -25,7 +26,11 @@ namespace WangSql.Sqlite
         }
         public static void Init(string name, string connectionString)
         {
-            SqliteProviderOptions options = new SqliteProviderOptions(name, connectionString, _connectionType, _useParameterPrefixInSql, _useParameterPrefixInParameter, _parameterPrefix, _useQuotationInSql, _debug);
+            Init(name, connectionString, _debug, _autoCreateTable);
+        }
+        public static void Init(string name, string connectionString, bool debug, bool autoCreateTable)
+        {
+            SqliteProviderOptions options = new SqliteProviderOptions(name, connectionString, _connectionType, _useParameterPrefixInSql, _useParameterPrefixInParameter, _parameterPrefix, _useQuotationInSql, debug, autoCreateTable);
             Init(options);
         }
         public static void Init(SqliteProviderOptions options)
@@ -39,11 +44,14 @@ namespace WangSql.Sqlite
             //
             if (options.TableMaps != null && options.TableMaps.Count > 0)
             {
-                EntityUtil.SetMaps(options.Name, options.TableMaps);
+                EntityUtil.SetMaps(options.TableMaps, options.Name);
             }
             if (options.AutoCreateTable)
             {
-                (new SqlMapper(options.Name)).Migrate().Init();
+                var sqlMapper = new SqlMapper(options.Name);
+                var migrate = sqlMapper.Migrate();
+                migrate.Init(sqlMapper);
+                migrate.CreateTable();
             }
         }
     }

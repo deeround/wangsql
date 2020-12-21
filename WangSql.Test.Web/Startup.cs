@@ -28,8 +28,8 @@ namespace WangSql.Test.Web
             services.AddSqliteProvider(options =>
             {
                 options.ConnectionString = "Data Source=wangsql.db;";
-                options.AutoCreateTable = true;
                 options.TableMaps = new Type[] { typeof(Models.User), typeof(Models.Order) };
+                options.AutoCreateTable = true;
             });
 
             services.AddControllers();

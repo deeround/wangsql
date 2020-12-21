@@ -17,9 +17,5 @@ namespace WangSql.Abstract.Attributes
         /// 驱动名
         /// </summary>
         public string ProviderName { get; set; }
-        /// <summary>
-        /// 是否自动创建表
-        /// </summary>
-        public bool AutoCreate { get; set; }
     }
 }

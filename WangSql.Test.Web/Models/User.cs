@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WangSql.Test.Web.Models
 {
-    [WangSql.Abstract.Attributes.Table(TableName = "tb_user", AutoCreate = true)]
+    [WangSql.Abstract.Attributes.Table(TableName = "tb_user")]
     public class User
     {
         [WangSql.Abstract.Attributes.Column(IsPrimaryKey = true)]

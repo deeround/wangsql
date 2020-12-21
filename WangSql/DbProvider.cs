@@ -73,10 +73,6 @@ namespace WangSql
             ParameterPrefix = options.ParameterPrefix;
             UseQuotationInSql = options.UseQuotationInSql;
             Debug = options.Debug;
-
-            //注入默认服务
-            AddService<IMigrateProvider, DefaultMigrateProvider>();
-            AddService<IPageProvider, DefaultPageProvider>();
         }
 
         public string ConnectionString { get; }
@@ -206,6 +202,9 @@ namespace WangSql
                 }
             }
             DbProviderConfigCache[options.Name] = dbProvider;
+            //注入默认服务
+            dbProvider.AddService<IMigrateProvider, DefaultMigrateProvider>();
+            dbProvider.AddService<IPageProvider, DefaultPageProvider>();
         }
         /// <summary>
         /// 通过配置文件初始化驱动程序

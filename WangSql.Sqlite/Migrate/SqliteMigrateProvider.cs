@@ -33,7 +33,7 @@ namespace WangSql.Sqlite.Migrate
         {
             if (sqlMapper != null)
             {
-                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).Where(x => x.AutoCreate).ToList();
+                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).ToList();
 
                 for (int i = 0; i < tables.Count; i++)
                 {
@@ -63,7 +63,7 @@ namespace WangSql.Sqlite.Migrate
         {
             if (sqlMapper != null)
             {
-                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).Where(x => x.AutoCreate).ToList();
+                var tables = EntityUtil.GetMaps(sqlMapper.SqlFactory.DbProvider.Name).ToList();
 
                 for (int i = 0; i < tables.Count; i++)
                 {

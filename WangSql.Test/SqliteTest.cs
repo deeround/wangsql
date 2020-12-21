@@ -10,8 +10,8 @@ namespace WangSql.Test
     {
         public static void Test()
         {
-            SqliteProviderManager.Init("Data Source=wangsql.db;");
-            EntityUtil.SetMaps(DbProviderManager.Get().Name, new Type[] { typeof(Models.User), typeof(Models.Order) });
+            EntityUtil.SetMaps(new Type[] { typeof(Models.User), typeof(Models.Order) }, "sqlite_test");
+            SqliteProviderManager.Init("sqlite_test", "Data Source=wangsql.db;", false, true);
 
             var session = new SqlMapper();
             var sqlBuilder = new SqlBuilder();
@@ -28,8 +28,6 @@ namespace WangSql.Test
                 UserId = user.Id,
                 OrderName = "asasa"
             };
-
-            session.Migrate().CreateTable();
 
             var r01 = session.From<User>().Insert(user).SaveChanges();
             var r02 = session.From<Order>().Insert(order).SaveChanges();

@@ -27,13 +27,13 @@ namespace WangSql.Abstract.Models
         /// </summary>
         public string Comment { get; set; }
         /// <summary>
-        /// 是否自动创建表
-        /// </summary>
-        public bool AutoCreate { get; set; }
-        /// <summary>
         /// 字段
         /// </summary>
         public List<ColumnInfo> Columns { get; set; }
+        /// <summary>
+        /// 是否是视图
+        /// </summary>
+        public bool IsView { get; set; }
         /// <summary>
         /// 
         /// </summary>
