@@ -11,7 +11,7 @@ namespace WangSql.Abstract.Linq
 {
     public interface IDataConfig { }
 
-    public class EntityUtil
+    public static class EntityUtil
     {
         /// <summary>
         /// 使用静态变量注意内存溢出

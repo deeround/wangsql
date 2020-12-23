@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WangSql.Abstract.Linq
 {
-    public class ServiceUtil
+    public static class ServiceUtil
     {
         /// <summary>
         /// 使用静态变量注意内存溢出

@@ -10,13 +10,6 @@ namespace WangSql.Sqlite.Migrate
 {
     public class SqliteMigrateProvider : DefaultMigrateProvider, IMigrateProvider
     {
-        #region constructor
-        public override void Init(ISqlExe sqlMapper)
-        {
-            _sqlMapper = sqlMapper;
-        }
-        #endregion
-
         public override void CreateTable()
         {
             if (_sqlMapper is ISqlMapper _sqlMapper1)

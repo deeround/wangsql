@@ -8,10 +8,21 @@ namespace WangSql.Abstract.Linq
 {
     public class ExpressionUtil : ExpressionVisitor
     {
+        #region constructor
+        private readonly DbProvider _dbProvider;
+        public ExpressionUtil()
+        {
+        }
+        public ExpressionUtil(DbProvider dbProvider)
+        {
+            _dbProvider = dbProvider;
+        }
+        #endregion
+
         #region propertys
         private StringBuilder _build = new StringBuilder();
         private Dictionary<string, object> _param { get; set; }
-        private string _paramName = "Name";
+        private string _paramName = "param";
         private string _operatorMethod { get; set; }
         private string _operator { get; set; }
         private bool _singleTable { get; set; }
@@ -200,7 +211,7 @@ namespace WangSql.Abstract.Linq
         #endregion
 
         #region public
-        public static string BuildExpression(Expression expression, Dictionary<string, object> param, bool singleTable = true)
+        public string BuildExpression(Expression expression, Dictionary<string, object> param, bool singleTable = true)
         {
             var visitor = new ExpressionUtil
             {
@@ -210,7 +221,7 @@ namespace WangSql.Abstract.Linq
             visitor.Visit(expression);
             return visitor._build.ToString();
         }
-        public static Dictionary<string, string> BuildColumns(Expression expression, Dictionary<string, object> param, bool singleTable = true)
+        public Dictionary<string, string> BuildColumns(Expression expression, Dictionary<string, object> param, bool singleTable = true)
         {
             var columns = new Dictionary<string, string>();
             if (expression is LambdaExpression)
@@ -287,7 +298,7 @@ namespace WangSql.Abstract.Linq
             }
             return columns;
         }
-        public static Dictionary<string, string> BuildColumn(Expression expression, Dictionary<string, object> param, bool singleTable = true)
+        public Dictionary<string, string> BuildColumn(Expression expression, Dictionary<string, object> param, bool singleTable = true)
         {
             if (expression is LambdaExpression)
             {
@@ -315,7 +326,7 @@ namespace WangSql.Abstract.Linq
                 return column;
             }
         }
-        public static object GetValue(Expression expression)
+        public object GetValue(Expression expression)
         {
             var names = new Stack<string>();
             var exps = new Stack<Expression>();

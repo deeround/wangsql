@@ -11,7 +11,9 @@ namespace WangSql.Abstract.Linq
 {
     public class DefaultSqlProvider<T> : ISqlProvider<T> where T : class
     {
+
         #region constructor
+        protected ExpressionUtil _expressionUtil { get; set; }
         protected ISqlExe _sqlMapper { get; set; }
         public void Init()
         {
@@ -19,6 +21,7 @@ namespace WangSql.Abstract.Linq
         }
         public void Init(ISqlExe sqlMapper)
         {
+            _expressionUtil = new ExpressionUtil(sqlMapper.SqlFactory.DbProvider);
             _sqlMapper = sqlMapper;
             _param = new Dictionary<string, object>();
         }
@@ -54,12 +57,12 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T> Where(Expression<Func<T, bool>> expression)
         {
-            Where(ExpressionUtil.BuildExpression(expression, _param), null);
+            Where(_expressionUtil.BuildExpression(expression, _param), null);
             return this;
         }
         public ISqlProvider<T> Filter<TResult>(Expression<Func<T, TResult>> columns)
         {
-            _filters.AddRange(ExpressionUtil.BuildColumns(columns, _param).Select(s => s.Value));
+            _filters.AddRange(_expressionUtil.BuildColumns(columns, _param).Select(s => s.Value));
             return this;
         }
 
@@ -77,7 +80,7 @@ namespace WangSql.Abstract.Linq
         {
             _commandType = CommandType.Select;
             var columstr = string.Join(",",
-                ExpressionUtil.BuildColumns(columns, _param).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
+                _expressionUtil.BuildColumns(columns, _param).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
             if (columstr != null)
             {
                 _columnBuffer.Append(columns);
@@ -100,7 +103,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T> GroupBy<TResult>(Expression<Func<T, TResult>> expression)
         {
-            GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
+            GroupBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T> Having(string expression)
@@ -110,7 +113,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T> Having(Expression<Func<T, bool>> expression)
         {
-            Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
+            Having(string.Join(",", _expressionUtil.BuildColumns(expression, _param).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T> OrderBy(string orderBy)
@@ -124,12 +127,12 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T> OrderBy<TResult>(Expression<Func<T, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} ASC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
         public ISqlProvider<T> OrderByDescending<TResult>(Expression<Func<T, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} DESC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
 
@@ -150,7 +153,7 @@ namespace WangSql.Abstract.Linq
             {
                 _setBuffer.Append(",");
             }
-            var columns = ExpressionUtil.BuildColumn(column, _param).First();
+            var columns = _expressionUtil.BuildColumn(column, _param).First();
             var key = string.Format("{0}{1}", columns.Key, _param.Count);
             _param.Add(key, value);
             _setBuffer.AppendFormat("{0} = #{1}#", columns.Value, key);
@@ -162,8 +165,8 @@ namespace WangSql.Abstract.Linq
             {
                 _setBuffer.Append(",");
             }
-            var columnName = ExpressionUtil.BuildColumn(column, _param).First().Value;
-            var expression = ExpressionUtil.BuildExpression(value, _param);
+            var columnName = _expressionUtil.BuildColumn(column, _param).First().Value;
+            var expression = _expressionUtil.BuildExpression(value, _param);
             _setBuffer.AppendFormat("{0} = {1}", columnName, expression);
             return this;
         }
@@ -451,13 +454,16 @@ namespace WangSql.Abstract.Linq
     public class DefaultSqlProvider<T1, T2> : ISqlProvider<T1, T2> where T1 : class where T2 : class
     {
         #region constructor
+        protected ExpressionUtil _expressionUtil { get; set; }
         protected ISqlExe _sqlMapper { get; set; }
         public void Init()
         {
+            _expressionUtil = new ExpressionUtil();
             _param = new Dictionary<string, object>();
         }
         public void Init(ISqlExe sqlMapper)
         {
+            _expressionUtil = new ExpressionUtil();
             _sqlMapper = sqlMapper;
             _param = new Dictionary<string, object>();
         }
@@ -480,7 +486,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2> GroupBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
-            GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
+            GroupBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T1, T2> Having(string expression)
@@ -490,7 +496,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2> Having(Expression<Func<T1, T2, bool>> expression)
         {
-            Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
+            Having(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T1, T2> OrderBy(string orderBy)
@@ -504,12 +510,12 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2> OrderBy<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
         public ISqlProvider<T1, T2> OrderByDescending<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
         public ISqlProvider<T1, T2> Where(string expression, Action<Dictionary<string, object>> action = null)
@@ -524,7 +530,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2> Where(Expression<Func<T1, T2, bool>> expression)
         {
-            Where(ExpressionUtil.BuildExpression(expression, _param, false), null);
+            Where(_expressionUtil.BuildExpression(expression, _param, false), null);
             return this;
         }
         public ISqlProvider<T1, T2> Join(string expression)
@@ -538,7 +544,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2> Join(Expression<Func<T1, T2, bool>> expression, JoinType join = JoinType.Inner)
         {
-            var onExpression = ExpressionUtil.BuildExpression(expression, _param, false);
+            var onExpression = _expressionUtil.BuildExpression(expression, _param, false);
             var table1Name = EntityUtil.GetMap<T1>().TableName;
             var table2Name = EntityUtil.GetMap<T2>().TableName;
             var joinType = string.Format("{0} JOIN", join.ToString().ToUpper());
@@ -556,7 +562,7 @@ namespace WangSql.Abstract.Linq
         public ISqlProvider<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression)
         {
             var columstr = string.Join(",",
-                ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
+                _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
             return Select(columstr);
         }
         public SqlBuilder ToSql()
@@ -642,13 +648,16 @@ namespace WangSql.Abstract.Linq
     public class DefaultSqlProvider<T1, T2, T3> : ISqlProvider<T1, T2, T3> where T1 : class where T2 : class where T3 : class
     {
         #region constructor
+        protected ExpressionUtil _expressionUtil { get; set; }
         protected ISqlExe _sqlMapper { get; set; }
         public void Init()
         {
+            _expressionUtil = new ExpressionUtil();
             _param = new Dictionary<string, object>();
         }
         public void Init(ISqlExe sqlMapper)
         {
+            _expressionUtil = new ExpressionUtil();
             _sqlMapper = sqlMapper;
             _param = new Dictionary<string, object>();
         }
@@ -671,7 +680,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2, T3> GroupBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
-            GroupBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
+            GroupBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T1, T2, T3> Having(string expression)
@@ -681,7 +690,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2, T3> Having(Expression<Func<T1, T2, T3, bool>> expression)
         {
-            Having(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
+            Having(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => s.Value)));
             return this;
         }
         public ISqlProvider<T1, T2, T3> OrderBy(string orderBy)
@@ -695,12 +704,12 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2, T3> OrderBy<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} ASC", s.Value))));
             return this;
         }
         public ISqlProvider<T1, T2, T3> OrderByDescending<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
-            OrderBy(string.Join(",", ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
+            OrderBy(string.Join(",", _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} DESC", s.Value))));
             return this;
         }
         public ISqlProvider<T1, T2, T3> Where(string expression, Action<Dictionary<string, object>> action = null)
@@ -715,7 +724,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> expression)
         {
-            Where(ExpressionUtil.BuildExpression(expression, _param, false), null);
+            Where(_expressionUtil.BuildExpression(expression, _param, false), null);
             return this;
         }
         public ISqlProvider<T1, T2, T3> Join(string expression)
@@ -729,7 +738,7 @@ namespace WangSql.Abstract.Linq
         }
         public ISqlProvider<T1, T2, T3> Join<E1, E2>(Expression<Func<E1, E2, bool>> expression, JoinType join = JoinType.Inner) where E1 : class where E2 : class
         {
-            var onExpression = ExpressionUtil.BuildExpression(expression, _param, false);
+            var onExpression = _expressionUtil.BuildExpression(expression, _param, false);
             var table1Name = EntityUtil.GetMap<E1>().TableName;
             var table2Name = EntityUtil.GetMap<E2>().TableName;
             var joinType = string.Format("{0} JOIN", join.ToString().ToUpper());
@@ -762,7 +771,7 @@ namespace WangSql.Abstract.Linq
         public ISqlProvider<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression)
         {
             var columstr = string.Join(",",
-                ExpressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
+                _expressionUtil.BuildColumns(expression, _param, false).Select(s => string.Format("{0} AS {1}", s.Value, s.Key)));
             return Select(columstr);
         }
         public SqlBuilder ToSql()

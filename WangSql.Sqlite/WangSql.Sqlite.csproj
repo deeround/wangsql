@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>WangSql.Provider.Sqlite</AssemblyName>
+    <RootNamespace>WangSql.Provider.Sqlite</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
