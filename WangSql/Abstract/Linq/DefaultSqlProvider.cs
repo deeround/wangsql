@@ -60,6 +60,20 @@ namespace WangSql.Abstract.Linq
             Where(_expressionUtil.BuildExpression(expression, _param), null);
             return this;
         }
+        public ISqlProvider<T> WhereIf(bool where, Expression<Func<T, bool>> expression)
+        {
+            if (where)
+                Where(_expressionUtil.BuildExpression(expression, _param), null);
+            return this;
+        }
+        public ISqlProvider<T> WhereIf(bool where, Expression<Func<T, bool>> expressionTrue, Expression<Func<T, bool>> expressionFalse)
+        {
+            if (where)
+                Where(_expressionUtil.BuildExpression(expressionTrue, _param), null);
+            else
+                Where(_expressionUtil.BuildExpression(expressionFalse, _param), null);
+            return this;
+        }
         public ISqlProvider<T> Filter<TResult>(Expression<Func<T, TResult>> columns)
         {
             _filters.AddRange(_expressionUtil.BuildColumns(columns, _param).Select(s => s.Value));

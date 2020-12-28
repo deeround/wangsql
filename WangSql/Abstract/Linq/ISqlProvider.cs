@@ -10,13 +10,15 @@ namespace WangSql.Abstract.Linq
         public string Sql { get; set; }
         public Dictionary<string, object> Parameter { get; set; }
     }
-    public interface ISqlProvider<T>: IProvider
+    public interface ISqlProvider<T> : IProvider
     {
         #region interface
         ISqlProvider<T> With(string lockType);
         ISqlProvider<T> With(LockType lockType);
         ISqlProvider<T> Where(string expression, Action<Dictionary<string, object>> action = null);
         ISqlProvider<T> Where(Expression<Func<T, bool>> expression);
+        ISqlProvider<T> WhereIf(bool where, Expression<Func<T, bool>> expression);
+        ISqlProvider<T> WhereIf(bool where, Expression<Func<T, bool>> expressionTrue, Expression<Func<T, bool>> expressionFalse);
         ISqlProvider<T> Filter<TResult>(Expression<Func<T, TResult>> columns);
 
 
