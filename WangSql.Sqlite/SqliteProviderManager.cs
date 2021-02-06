@@ -40,12 +40,12 @@ namespace WangSql.Sqlite
             var provider = DbProviderManager.Get(options.Name);
             provider.AddService<IPageProvider, SqlitePageProvider>();
             provider.AddService<IMigrateProvider, SqliteMigrateProvider>();
-
-            //
+            //表映射配置
             if (options.TableMaps != null && options.TableMaps.Count > 0)
             {
                 EntityUtil.SetMaps(options.TableMaps, options.Name);
             }
+            //自动创建表
             if (options.AutoCreateTable)
             {
                 var sqlMapper = new SqlMapper(options.Name);

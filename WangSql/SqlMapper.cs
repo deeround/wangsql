@@ -99,11 +99,6 @@ namespace WangSql
 
         public IEnumerable<T> Query<T>(string sql, object param, int? timeout = null)
         {
-            return this.Query<T>(sql, param, true, timeout);
-        }
-
-        public IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null)
-        {
             var conn = CreateConnection(true);
             try
             {
@@ -257,11 +252,6 @@ namespace WangSql
         }
 
         public IEnumerable<T> Query<T>(string sql, object param, int? timeout = null)
-        {
-            return this.Query<T>(sql, param, true, timeout);
-        }
-
-        public IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null)
         {
             var cmd = SqlFactory.CreateCommand(_conn, sql, param, CommandType.Text);
             cmd.Transaction = _trans;

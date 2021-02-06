@@ -22,25 +22,11 @@ namespace WangSql
             return provider.QueryPage<T>(sql, param, pageIndex, pageSize, timeout);
         }
 
-        public static IEnumerable<T> QueryPage<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, bool buffered = true, int? timeout = null)
-        {
-            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
-            provider.Init(sqlMapper);
-            return provider.QueryPage<T>(sql, param, pageIndex, pageSize, buffered, timeout);
-        }
-
         public static Task<IEnumerable<T>> QueryPageAsync<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, int? timeout = null)
         {
             var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
             provider.Init(sqlMapper);
             return provider.QueryPageAsync<T>(sql, param, pageIndex, pageSize, timeout);
-        }
-
-        public static Task<IEnumerable<T>> QueryPageAsync<T>(this ISqlExe sqlMapper, string sql, object param, int pageIndex, int pageSize, bool buffered = true, int? timeout = null)
-        {
-            var provider = sqlMapper.SqlFactory.DbProvider.GetService<IPageProvider>();
-            provider.Init(sqlMapper);
-            return provider.QueryPageAsync<T>(sql, param, pageIndex, pageSize, buffered, timeout);
         }
 
         public static ISqlProvider<T> From<T>(this ISqlExe sqlMapper) where T : class

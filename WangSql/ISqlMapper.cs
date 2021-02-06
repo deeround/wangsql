@@ -37,8 +37,6 @@ namespace WangSql
         /// <returns></returns>
         IEnumerable<T> Query<T>(string sql, object param, int? timeout = null);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, int? timeout = null);
-        IEnumerable<T> Query<T>(string sql, object param, bool buffered = true, int? timeout = null);
-        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param, bool buffered = true, int? timeout = null);
 
         /// <summary>
         ///     返回值为结果集中第一行的第一列或空引用（如果结果集为空）

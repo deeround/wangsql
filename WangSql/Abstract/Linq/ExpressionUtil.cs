@@ -9,13 +9,8 @@ namespace WangSql.Abstract.Linq
     public class ExpressionUtil : ExpressionVisitor
     {
         #region constructor
-        private readonly DbProvider _dbProvider;
         public ExpressionUtil()
         {
-        }
-        public ExpressionUtil(DbProvider dbProvider)
-        {
-            _dbProvider = dbProvider;
         }
         #endregion
 

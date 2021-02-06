@@ -51,10 +51,10 @@ namespace WangSql.Abstract.Linq
         TResult Single<TResult>(int? timeout = null);
         Task<TResult> SingleAsync<TResult>(int? timeout = null);
 
-        IEnumerable<T> ToList(bool buffered = true, int? timeout = null);
-        Task<IEnumerable<T>> ToListAsync(bool buffered = true, int? timeout = null);
-        IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null);
-        Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null);
+        IEnumerable<T> ToList(int? timeout = null);
+        Task<IEnumerable<T>> ToListAsync(int? timeout = null);
+        IEnumerable<TResult> ToList<TResult>(int? timeout = null);
+        Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null);
         #endregion
 
         #endregion
@@ -84,8 +84,8 @@ namespace WangSql.Abstract.Linq
         ISqlProvider<T1, T2> Select<TResult>(Expression<Func<T1, T2, TResult>> expression);
         SqlBuilder ToSql();
 
-        IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null);
-        Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null);
+        IEnumerable<TResult> ToList<TResult>(int? timeout = null);
+        Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null);
     }
     public interface ISqlProvider<T1, T2, T3> : IProvider
     {
@@ -105,8 +105,8 @@ namespace WangSql.Abstract.Linq
         ISqlProvider<T1, T2, T3> Select<TResult>(Expression<Func<T1, T2, T3, TResult>> expression);
         SqlBuilder ToSql();
 
-        IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null);
-        Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null);
+        IEnumerable<TResult> ToList<TResult>(int? timeout = null);
+        Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null);
     }
 
     public enum LockType

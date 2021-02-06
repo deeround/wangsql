@@ -15,15 +15,18 @@ namespace WangSql.Abstract.Linq
         #region constructor
         protected ExpressionUtil _expressionUtil { get; set; }
         protected ISqlExe _sqlMapper { get; set; }
+        public DefaultSqlProvider()
+        {
+            _param = new Dictionary<string, object>();
+            _expressionUtil = new ExpressionUtil();
+        }
         public void Init()
         {
             _param = new Dictionary<string, object>();
         }
         public void Init(ISqlExe sqlMapper)
         {
-            _expressionUtil = new ExpressionUtil(sqlMapper.SqlFactory.DbProvider);
             _sqlMapper = sqlMapper;
-            _param = new Dictionary<string, object>();
         }
         #endregion
 
@@ -314,39 +317,39 @@ namespace WangSql.Abstract.Linq
             return default(TResult);
         }
 
-        public IEnumerable<T> ToList(bool buffered = true, int? timeout = null)
+        public IEnumerable<T> ToList(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _sqlMapper.Query<T>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<T>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<T>();
         }
-        public async Task<IEnumerable<T>> ToListAsync(bool buffered = true, int? timeout = null)
+        public async Task<IEnumerable<T>> ToListAsync(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _sqlMapper.QueryAsync<T>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<T>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<T>();
         }
-        public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
+        public IEnumerable<TResult> ToList<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
-        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
+        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
@@ -592,21 +595,21 @@ namespace WangSql.Abstract.Linq
             return sqlBuilder;
         }
 
-        public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
+        public IEnumerable<TResult> ToList<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
-        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
+        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return await _sqlMapper.QueryAsync<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
@@ -801,16 +804,16 @@ namespace WangSql.Abstract.Linq
             return sqlBuilder;
         }
 
-        public IEnumerable<TResult> ToList<TResult>(bool buffered = true, int? timeout = null)
+        public IEnumerable<TResult> ToList<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
                 var sql = ToSql();
-                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, buffered, timeout);
+                return _sqlMapper.Query<TResult>(sql.Sql, sql.Parameter, timeout);
             }
             return new List<TResult>();
         }
-        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(bool buffered = true, int? timeout = null)
+        public async Task<IEnumerable<TResult>> ToListAsync<TResult>(int? timeout = null)
         {
             if (_sqlMapper != null)
             {
