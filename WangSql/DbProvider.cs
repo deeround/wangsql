@@ -158,6 +158,13 @@ namespace WangSql
             return ServiceUtil.GetService(this.Name, serviceType);
         }
         #endregion
+
+        #region 扩展注入表映射
+        public void SetTableMaps(IList<Type> tableMaps)
+        {
+            EntityUtil.SetMaps(tableMaps, Name);
+        }
+        #endregion
     }
 
     public class DbProviderManager

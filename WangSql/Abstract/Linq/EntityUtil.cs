@@ -144,6 +144,10 @@ namespace WangSql.Abstract.Linq
                     TableName = type.Name
                 };
             }
+            if (string.IsNullOrEmpty(table.TableName))
+            {
+                table.TableName = type.Name;
+            }
             if (string.IsNullOrEmpty(table.ProviderName))
             {
                 var provider = (ProviderAttribute)type.GetCustomAttributes(typeof(ProviderAttribute), true).FirstOrDefault();
@@ -174,9 +178,13 @@ namespace WangSql.Abstract.Linq
                         ColumnName = item.Name
                     };
                 }
+                if (string.IsNullOrEmpty(column.ColumnName))
+                {
+                    column.ColumnName = item.Name;
+                }
                 result.Columns.Add(new ColumnInfo()
                 {
-                    ColumnName = string.IsNullOrEmpty(column.ColumnName) ? item.Name : column.ColumnName,
+                    ColumnName = column.ColumnName,
                     PropertyName = item.Name,
                     PropertyType = item.PropertyType,
                     Comment = column.Comment,
