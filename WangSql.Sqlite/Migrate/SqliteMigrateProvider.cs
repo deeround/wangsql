@@ -180,5 +180,13 @@ namespace WangSql.Sqlite.Migrate
                     }
             }
         }
+
+
+
+
+        public override void BuildModel()
+        {
+        }
+
     }
 }

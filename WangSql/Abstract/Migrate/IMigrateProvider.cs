@@ -7,5 +7,6 @@ namespace WangSql.Abstract.Migrate
     public interface IMigrateProvider : IProvider
     {
         void CreateTable();
+        void BuildModel();
     }
 }

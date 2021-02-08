@@ -21,5 +21,10 @@ namespace WangSql.Abstract.Migrate
         {
             throw new System.NotImplementedException();
         }
+
+        public virtual void BuildModel()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

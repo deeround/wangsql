@@ -255,9 +255,6 @@ namespace WangSql.Abstract.Linq
                     sqlBuilder.Sql = BuildDelete();
                     break;
             }
-
-            Console.WriteLine(sqlBuilder.Sql);
-
             return sqlBuilder;
         }
         public int SaveChanges(int? timeout = null)
@@ -589,9 +586,6 @@ namespace WangSql.Abstract.Linq
                 Sql = BuildSelect(),
                 Parameter = _param
             };
-
-            Console.WriteLine(sqlBuilder.Sql);
-
             return sqlBuilder;
         }
 
@@ -798,9 +792,6 @@ namespace WangSql.Abstract.Linq
                 Sql = BuildSelect(),
                 Parameter = _param
             };
-
-            Console.WriteLine(sqlBuilder.Sql);
-
             return sqlBuilder;
         }
 
